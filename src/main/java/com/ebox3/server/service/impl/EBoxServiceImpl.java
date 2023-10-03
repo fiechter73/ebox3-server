@@ -168,12 +168,6 @@ public class EBoxServiceImpl extends HelpFunctions implements EBoxService {
 		// ebox.setStatusText("frei");
 
 		mapper.typeMap(EboxDTO.class, Ebox.class).addMappings(mapper -> {
-			mapper.skip(Ebox::setId);
-			mapper.skip(Ebox::setContract);
-			// mapper.skip(Ebox::setStartDate);
-			// mapper.skip(Ebox::setEndDate);
-			// mapper.skip(Ebox::setStatus);
-			// mapper.skip(Ebox::setStatusText);
 		}).map(eboxDTO, ebox);
 		return mapper.map(eBoxRepository.save(ebox), EboxDTO.class);
 	}
