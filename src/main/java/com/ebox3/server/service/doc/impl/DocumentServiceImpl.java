@@ -55,6 +55,7 @@ public class DocumentServiceImpl extends CalcHelper implements DocumentService {
 			outputStream = new FileOutputStream(file);
 
 		} catch (final Exception ex) {
+			logger.info(ex);
 			response.sendError(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
 		}
 

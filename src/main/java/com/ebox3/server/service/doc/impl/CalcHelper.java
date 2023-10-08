@@ -535,13 +535,16 @@ public class CalcHelper {
 	}
 
 	public File loadOutputFile(String path) throws IOException {
-		System.out.println("Erkannter Pfad loadOutputFile: " + path);
+		//String currentDirectory = System.getProperty("user.dir");
+		//logger.info("Aktueller Pfad: " +currentDirectory);
+		//String absolutePath = currentDirectory + File.separator + path;
+		logger.info("Erkannter Pfad loadOutputFile: " + path);
 		return new File(path);
 	}
 
 	public InputStream loadClassPathResource(String path) throws IOException {
 		Resource resource = new ClassPathResource(path);
-		System.out.println("Erkannter Pfad loadClassPathResource: " + resource.getURL().getPath());
+		logger.info("Erkannter Pfad loadClassPathResource: " + resource.getURL().getPath());
 		return resource.getInputStream();
 	}
 
