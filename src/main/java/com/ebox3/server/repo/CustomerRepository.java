@@ -23,6 +23,11 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 			+ "c.vorname, ' ', c.strasse, ' ', c.plz, ' ', c.ort) AS viewValue" + "	FROM customer c"
 			+ "	WHERE c.status_text NOT IN ('Intressent', 'Kündigung')" + "ORDER BY c.name, c.vorname", nativeQuery = true)
 	List<Map<Long, Object>> customerSelection();
+	
+	@Query(value = "SELECT c.id AS value,	CONCAT(c.name, ' ', "
+			+ "c.vorname, ' ', c.strasse, ' ', c.plz, ' ', c.ort) AS viewValue" + "	FROM customer c"
+			+ "	WHERE c.status_text NOT IN ('Intressent')" + "ORDER BY c.name, c.vorname", nativeQuery = true)
+	List<Map<Long, Object>> customerSelectionWithDismissal();
 
 	@Query("SELECT c FROM Customer c WHERE c.statusText LIKE :statusText")
 	List<Customer> findByStatusText(@Param("statusText") String statusText);

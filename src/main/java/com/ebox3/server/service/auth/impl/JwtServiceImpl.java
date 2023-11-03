@@ -20,8 +20,12 @@ import io.jsonwebtoken.security.Keys;
 
 @Service
 public class JwtServiceImpl implements JwtService {
-    @Value("${token.signing.key}")
+    
+	@Value("${token.signing.key}")
     private String jwtSigningKey;
+    
+    private static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
+    
     @Override
     public String extractUserName(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -50,10 +54,10 @@ public class JwtServiceImpl implements JwtService {
         		.setClaims(extraClaims)
         		.setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24))
+                .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 1000))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256).compact();
     }
-
+    
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }

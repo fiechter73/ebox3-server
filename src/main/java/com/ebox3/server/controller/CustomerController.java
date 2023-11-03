@@ -33,6 +33,12 @@ public class CustomerController extends HelpFunctions {
 	public @ResponseBody Iterable<Map<Long, Object>> getCustomerList() {
 		return customerService.getCustomerList();
 	}
+	
+	@GetMapping("/listwithdismissal")
+	public @ResponseBody Iterable<Map<Long, Object>> getCusomerList() {
+		return customerService.getCustomerWithDismissalList();
+	}
+	
 
 	@GetMapping("/find")
 	public ResponseEntity<Map<String, Object>> getAllCustomers(@RequestParam(required = false) String search,

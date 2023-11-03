@@ -50,6 +50,11 @@ public class CustomerServiceImpl extends HelpFunctions implements CustomerServic
 		List<Map<Long, Object>> res = customerRepository.customerSelection();
 		return res.stream().distinct().collect(Collectors.toList());
 	}
+	
+	public Iterable<Map<Long, Object>> getCustomerWithDismissalList() {
+		List<Map<Long, Object>> res = customerRepository.customerSelectionWithDismissal();
+		return res.stream().distinct().collect(Collectors.toList());
+	}
 
 	@Override
 	public Map<String, Object> getAllCustomers(String search, Boolean isCustomer, int page, int size)

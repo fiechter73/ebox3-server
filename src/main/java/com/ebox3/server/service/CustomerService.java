@@ -9,6 +9,8 @@ import com.ebox3.server.model.dto.OverviewDTO;
 public interface CustomerService {
 
 	public Iterable<Map<Long, Object>> getCustomerList();
+	
+	public Iterable <Map<Long, Object>> getCustomerWithDismissalList();
 
 	public Map<String, Object> getAllCustomers(String search, Boolean isCustomer, int page, int size);
 
