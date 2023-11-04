@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.ebox3.server.exception.InternalServerException;
@@ -32,6 +33,9 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private ModelMapper mapper;
+	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	@Override
 	public Map<String, Object> getAllUsers(String search, int page, int size) {
@@ -93,7 +97,13 @@ public class UserServiceImpl implements UserService {
 	public UserDTO update(Long id, UserDTO userDTO) throws ResourceNotFoundException {
 		User user = userRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException(String.format("User by id %d not found", id)));
+				
 		mapper.map(userDTO, user);
+		
+		if(userDTO.getPassword().length()> 0) {
+			user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+		}
+		
 		return mapper.map(userRepository.save(user), UserDTO.class);
 	}
 	

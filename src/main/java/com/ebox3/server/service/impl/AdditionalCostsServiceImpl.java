@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -122,7 +123,7 @@ public class AdditionalCostsServiceImpl implements AdditionalCostsService {
 		AdditionalCosts addCosts = additionalCostsRepository.findById(id).orElseThrow(
 				() -> new ResourceNotFoundException(String.format("AdditionalCosts not found by id: %d", id)));
 
-		// mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+		mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
 		mapper.typeMap(AdditionalCostsDTO.class, AdditionalCosts.class).addMappings(mapper -> {
 			mapper.skip(AdditionalCosts::setId);
