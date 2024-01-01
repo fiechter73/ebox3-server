@@ -72,7 +72,7 @@ public class AttributeValueServiceImpl implements AttributeValueService {
 
 			mapper.typeMap(AttributeValueDTO.class, AttributeValue.class).addMappings(mapper -> {
 				mapper.skip(AttributeValue::setId);
-				mapper.skip(AttributeValue::setAttributeKey);
+		//		mapper.skip(AttributeValue::setAttributeKey);
 			}).map(attributeValueDTO, attributeValue);
 			return mapper.map(attributeValueRepository.save(attributeValue), AttributeValueDTO.class);
 		}).orElseThrow(() -> new ResourceNotFoundException("AttributeKeyId " + id + "not found"));

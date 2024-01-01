@@ -47,6 +47,11 @@
 			<artifactId>modelmapper</artifactId>
 			<version>3.1.1</version>
 		</dependency>
+		<dependency>
+			<groupId>net.sourceforge.tess4j</groupId>
+			<artifactId>tess4j</artifactId>
+			<version>5.8.0</version>
+		</dependency>
 		<!-- Google.guava -->
 		<dependency>
 			<groupId>com.google.guava</groupId>
@@ -58,13 +63,12 @@
 			<artifactId>docx-stamper</artifactId>
 			<version>2.0.0</version>
 		</dependency>
-				<!-- DocX4j -->
+		<!-- DocX4j -->
 		<dependency>
 			<groupId>org.docx4j</groupId>
 			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
 			<version>11.4.9</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>

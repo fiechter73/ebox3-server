@@ -54,12 +54,20 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 
 	@Autowired
 	AttributeKeyRepository attributeKeyRepository;
-	
+
 	@Override
 	public Iterable<WidgetDTO> getBigChart(String year) {
 
+		Long mwStYear = null;
+		if (year.equals("undefined") || year == null) {
+			Calendar cal = Calendar.getInstance();
+			mwStYear = (long) cal.get(Calendar.YEAR);
+		} else {
+			mwStYear = Long.parseLong(year);
+		}
+
 		List<PaymentDatePrice> list = paymentDatePriceRepository.findByYear(year);
-		Double mwst = Double.valueOf(attributeKeyRepository.findMwstSatz("mwst"));
+		Double mwst = Double.valueOf(attributeKeyRepository.findMwstSatz("mwst", mwStYear));
 
 		List<WidgetDTO> retValue = new ArrayList<WidgetDTO>();
 
@@ -152,11 +160,20 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 
 		return retValue;
 	}
+
 	@Override
 	public Iterable<ChartDataMonthDTO> getNgxChartBar(String year) {
 
+		Long mwStYear = null;
+		if (year.equals("undefined") || year == null) {
+			Calendar cal = Calendar.getInstance();
+			mwStYear = (long) cal.get(Calendar.YEAR);
+		} else {
+			mwStYear = Long.parseLong(year);
+		}
+
 		List<PaymentDatePrice> list = paymentDatePriceRepository.findByYear(year);
-		Double mwst = Double.valueOf(attributeKeyRepository.findMwstSatz("mwst"));
+		Double mwst = Double.valueOf(attributeKeyRepository.findMwstSatz("mwst", mwStYear));
 
 		List<ChartDataMonthDTO> retValue = new ArrayList<ChartDataMonthDTO>();
 
@@ -442,6 +459,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 		return retValue;
 
 	}
+
 	@Override
 	public Iterable<ChartDataSeriesDTO> getNgxCharPie() {
 
@@ -495,6 +513,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 
 		return retValue;
 	}
+
 	@Override
 	public Iterable<ChartDataSeriesDTO> getCountedObjectStateNgxPieChart(String year) throws ParseException {
 
@@ -548,6 +567,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 
 		return retValue;
 	}
+
 	@Override
 	public Iterable<ChartDataSeriesDTO> getCountedContractStateNgxPieChart(String year) throws ParseException {
 
@@ -602,6 +622,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 
 		return retValue;
 	}
+
 	@Override
 	public Iterable<ChartDataSeriesDTO> getCountedCustomerStateNgxPieChart(String year) throws ParseException {
 
@@ -656,6 +677,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 
 		return retValue;
 	}
+
 	@Override
 	public Iterable<ChartDataSeriesDTO> getDetailPriceNgxChart(String year) {
 
@@ -754,6 +776,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 
 		return retValue;
 	}
+
 	@Override
 	public Iterable<ChartDataSeriesDTO> getkWattChart(String year, String quarter) {
 
@@ -772,7 +795,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 		end = calcLastDayOfYear(year);
 		int pJahr = Integer.parseInt(year);
 
-		System.out.println("Jahr: " + pJahr);
+		// System.out.println("Jahr: " + pJahr);
 
 		if (quarter.contentEquals("Q1: Jan. - Mar.")) {
 			start = new GregorianCalendar(pJahr, 0, 1).getTime();
@@ -805,6 +828,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 		return retValue;
 
 	}
+
 	@Override
 	public Iterable<ChartDataSeriesDTO> getPricePowerNgxChart1(String year, String quarter) {
 
@@ -939,6 +963,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 		return retValue;
 
 	}
+
 	@Override
 	public Iterable<ChartDataSeriesDTO> getDetailPriceBill(String year) {
 
@@ -1021,6 +1046,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 
 		return retValue;
 	}
+
 	@Override
 	public Iterable<ChartDataSeriesDTO> getDetailPriceBillCount(String year) {
 
@@ -1054,6 +1080,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 
 		return retValue;
 	}
+
 	@Override
 	public Iterable<WidgetDTO> getPieChart() {
 
@@ -1108,6 +1135,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 
 		return retValue;
 	}
+
 	@Override
 	public WidgetDTO getCountedContract(String year) throws ParseException {
 
@@ -1152,6 +1180,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 
 		return dto;
 	}
+
 	@Override
 	public WidgetDTO getDetailPriceEbox() {
 
@@ -1188,6 +1217,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 
 		return dto;
 	}
+
 	@Override
 	public WidgetDTO getDetailPricePower(String year, String quarter) {
 
@@ -1289,6 +1319,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 		return dto;
 
 	}
+
 	@Override
 	public WidgetDTO getDetailPriceBills(String year) {
 
@@ -1364,6 +1395,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 
 		return dto;
 	}
+
 	@Override
 	public Iterable<OutstandPaymentDTO> getPaymentCheck(String year, String month) {
 		List<PaymentDatePrice> pdp = paymentDatePriceRepository.findByYear(year);

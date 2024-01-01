@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -101,10 +102,15 @@ public class CalcHelper {
 
 		Date startDate = from;
 		Date endDate = to;
-		// String jahr = Util.getYearByString(to);
+
+
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(endDate);
+
+		Long year = (long) cal.get(Calendar.YEAR);
 
 		ArrayList<MwstDTO> mwstList = new ArrayList<MwstDTO>();
-		Double mwst = Double.valueOf(attributeKeyRepository.findMwstSatz("mwst"));
+		Double mwst = Double.valueOf(attributeKeyRepository.findMwstSatz("mwst", year));
 
 		List<PaymentDatePrice> janList = paymenteDatePriceRepository.findJanByStartEndDate(startDate, endDate);
 		janList.forEach(pdp -> {
@@ -535,9 +541,9 @@ public class CalcHelper {
 	}
 
 	public File loadOutputFile(String path) throws IOException {
-		//String currentDirectory = System.getProperty("user.dir");
-		//logger.info("Aktueller Pfad: " +currentDirectory);
-		//String absolutePath = currentDirectory + File.separator + path;
+		// String currentDirectory = System.getProperty("user.dir");
+		// logger.info("Aktueller Pfad: " +currentDirectory);
+		// String absolutePath = currentDirectory + File.separator + path;
 		logger.info("Erkannter Pfad loadOutputFile: " + path);
 		return new File(path);
 	}

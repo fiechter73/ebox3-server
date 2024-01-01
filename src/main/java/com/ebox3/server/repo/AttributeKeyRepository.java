@@ -27,8 +27,8 @@ import com.ebox3.server.model.AttributeKey;
     
     
 	@Query("SELECT  av.description FROM AttributeKey ak, AttributeValue av "
-			+ "WHERE ak = av.attributeKey  AND ak.description = :id ")
-	String findMwstSatz(@Param("id") String id);
+			+ "WHERE ak = av.attributeKey  AND ak.description = :id AND av.sortOrder = :year ")
+	String findMwstSatz(@Param("id") String id, @Param("year") Long year );
 	
 	
 	List<AttributeKey> findByDescriptionContainingIgnoreCase(String description);
