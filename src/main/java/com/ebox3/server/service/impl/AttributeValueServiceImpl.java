@@ -1,6 +1,5 @@
 package com.ebox3.server.service.impl;
 
-
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,8 +30,6 @@ public class AttributeValueServiceImpl implements AttributeValueService {
 
 		AttributeValue value = attributeValueRepository.findById(id).orElseThrow(
 				() -> new ResourceNotFoundException(String.format("AttributeValue by id %d not found", id)));
-
-		System.out.println(value.getAttributeKey().getId());
 
 		AttributeValueDTO response = new AttributeValueDTO();
 		response.setId(value.getId());
@@ -72,7 +69,7 @@ public class AttributeValueServiceImpl implements AttributeValueService {
 
 			mapper.typeMap(AttributeValueDTO.class, AttributeValue.class).addMappings(mapper -> {
 				mapper.skip(AttributeValue::setId);
-		//		mapper.skip(AttributeValue::setAttributeKey);
+				// mapper.skip(AttributeValue::setAttributeKey);
 			}).map(attributeValueDTO, attributeValue);
 			return mapper.map(attributeValueRepository.save(attributeValue), AttributeValueDTO.class);
 		}).orElseThrow(() -> new ResourceNotFoundException("AttributeKeyId " + id + "not found"));
