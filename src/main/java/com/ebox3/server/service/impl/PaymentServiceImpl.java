@@ -92,7 +92,7 @@ public class PaymentServiceImpl implements PaymentService {
 	public PaymentDatePriceDTO create(Long id, PaymentDatePriceDTO paymentDatePriceDTO) {
 		return paymentRepository.findById(id).map(payment -> {
 			PaymentDatePrice pdp = mapper.map(paymentDatePriceDTO, PaymentDatePrice.class);
-			pdp.setPayment(payment);
+		    pdp.setPayment(payment);
 			paymentDatePriceRepository.save(pdp);
 			return mapper.map(pdp, PaymentDatePriceDTO.class);
 		}).orElseThrow(() -> new ResourceNotFoundException("PaymentId " + id + " not found"));

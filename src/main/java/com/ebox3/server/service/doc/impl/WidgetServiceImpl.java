@@ -172,7 +172,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 			mwStYear = Long.parseLong(year);
 		}
 
-		List<PaymentDatePrice> list = paymentDatePriceRepository.findByYear(year);
+		List<PaymentDatePrice> list = paymentDatePriceRepository.findByYear(mwStYear.toString());
 		Double mwst = Double.valueOf(attributeKeyRepository.findMwstSatz("mwst", mwStYear));
 
 		List<ChartDataMonthDTO> retValue = new ArrayList<ChartDataMonthDTO>();
