@@ -8,8 +8,6 @@ public class UserDTO {
 	private String role;
 	
 	
-	
-
 	public long getId() {
 		return id;
 	}
