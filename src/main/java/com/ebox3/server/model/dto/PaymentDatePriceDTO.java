@@ -50,6 +50,7 @@ public class PaymentDatePriceDTO {
 	private Date bruttoOctDate;
 	private Date bruttoNovDate;
 	private Date bruttoDecDate;
+	private boolean excludeInPaymentList;
 
 	public Long getId() {
 		return id;
@@ -403,6 +404,14 @@ public class PaymentDatePriceDTO {
 		this.retourKautionDate = retourKautionDate;
 	}
 
+	public boolean isExcludeInPaymentList() {
+		return excludeInPaymentList;
+	}
+
+	public void setExcludeInPaymentList(boolean excludeInPaymentList) {
+		this.excludeInPaymentList = excludeInPaymentList;
+	}
+
 	@Override
 	public String toString() {
 		return "PaymentDatePriceDTO [id=" + id + ", jahr=" + jahr + ", status=" + status + ", aktKautionPrice="
@@ -422,7 +431,7 @@ public class PaymentDatePriceDTO {
 				+ bruttoAprDate + ", bruttoMaiDate=" + bruttoMaiDate + ", bruttoJunDate=" + bruttoJunDate
 				+ ", bruttoJulDate=" + bruttoJulDate + ", bruttoAugDate=" + bruttoAugDate + ", bruttoSepDate="
 				+ bruttoSepDate + ", bruttoOctDate=" + bruttoOctDate + ", bruttoNovDate=" + bruttoNovDate
-				+ ", bruttoDecDate=" + bruttoDecDate + "]";
+				+ ", bruttoDecDate=" + bruttoDecDate + ", excludeInPaymentList=" + excludeInPaymentList + "]";
 	}
 
 	@Override

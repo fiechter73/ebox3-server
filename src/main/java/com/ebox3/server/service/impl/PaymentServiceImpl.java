@@ -92,7 +92,7 @@ public class PaymentServiceImpl implements PaymentService {
 	public PaymentDatePriceDTO create(Long id, PaymentDatePriceDTO paymentDatePriceDTO) {
 		return paymentRepository.findById(id).map(payment -> {
 			PaymentDatePrice pdp = mapper.map(paymentDatePriceDTO, PaymentDatePrice.class);
-		    pdp.setPayment(payment);
+			pdp.setPayment(payment);
 			paymentDatePriceRepository.save(pdp);
 			return mapper.map(pdp, PaymentDatePriceDTO.class);
 		}).orElseThrow(() -> new ResourceNotFoundException("PaymentId " + id + " not found"));
@@ -124,6 +124,10 @@ public class PaymentServiceImpl implements PaymentService {
 		dto.setAktKautionPrice(list.stream() // aktKautionPrice
 				.filter(pay -> pay != null && pay.getAktKautionPrice() != null).mapToDouble(Payment::getAktKautionPrice)
 				.sum());
+
+		dto.setRetourKautionPrice(list.stream() // retourKautionPrice
+				.filter(pay -> pay != null && pay.getRetourKautionPrice() != null)
+				.mapToDouble(Payment::getRetourKautionPrice).sum());
 
 		dto.setAktBruttoPrice(list.stream() // aktBruttoPrice
 				.filter(pay -> pay != null && pay.getAktBruttoPrice() != null).mapToDouble(Payment::getAktBruttoPrice)
@@ -228,12 +232,10 @@ public class PaymentServiceImpl implements PaymentService {
 			dto.setContractDetails(payment.getContractDetails());
 			dto.setBoxNumbers(payment.getBoxNumbers());
 
-			List<PaymentDatePriceDTO> pdpListDTO = payment.getPaymentDatePrice()
-					.stream()
+			List<PaymentDatePriceDTO> pdpListDTO = payment.getPaymentDatePrice().stream()
 					.sorted(Comparator.comparingLong(PaymentDatePrice::getId))
-                    .map(pdp -> mapper.map(pdp, PaymentDatePriceDTO.class))
-                    .collect(Collectors.toList());
-			 
+					.map(pdp -> mapper.map(pdp, PaymentDatePriceDTO.class)).collect(Collectors.toList());
+
 			dto.setPaymentDatePrice(pdpListDTO);
 			dto.setCopyFlag(payment.isCopyFlag());
 			dto.setLastName(payment.getContract().getCustomer().getName());
@@ -276,6 +278,7 @@ public class PaymentServiceImpl implements PaymentService {
 			paymentDatePrice.setBruttoNovDate(paymentDatePriceDTO.getBruttoNovDate());
 			paymentDatePrice.setBruttoDecPrice(paymentDatePriceDTO.getBruttoDecPrice());
 			paymentDatePrice.setBruttoDecDate(paymentDatePriceDTO.getBruttoDecDate());
+			paymentDatePrice.setExcludeInPaymentList(paymentDatePriceDTO.isExcludeInPaymentList());
 
 			paymentDatePriceRepository.save(paymentDatePrice);
 

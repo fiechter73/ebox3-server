@@ -1416,7 +1416,8 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 
 				switch (i) {
 				case 0:
-					if (item.getBruttoJanPrice() == null && item.getBruttoJanDate() == null
+					
+					if (!item.isExcludeInPaymentList() &&  (item.getBruttoJanPrice() == null) && item.getBruttoJanDate() == null
 							&& item.getPayment().getAktBruttoPrice() != null
 							&& item.getPayment().getAktBruttoPrice() != 0.00) {
 						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
@@ -1426,7 +1427,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 					}
 					break;
 				case 1:
-					if ((item.getBruttoFebPrice() == null) && item.getBruttoFebDate() == null
+					if (!item.isExcludeInPaymentList() && (item.getBruttoFebPrice() == null) && item.getBruttoFebDate() == null
 							&& item.getPayment().getAktBruttoPrice() != null
 							&& item.getPayment().getAktBruttoPrice() != 0.00) {
 						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
@@ -1436,7 +1437,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 					}
 					break;
 				case 2:
-					if ((item.getBruttoMarPrice() == null) && item.getBruttoMarDate() == null
+					if (!item.isExcludeInPaymentList() && (item.getBruttoMarPrice() == null) && item.getBruttoMarDate() == null
 							&& item.getPayment().getAktBruttoPrice() != null
 							&& item.getPayment().getAktBruttoPrice() != 0.00) {
 						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
@@ -1446,7 +1447,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 					}
 					break;
 				case 3:
-					if ((item.getBruttoAprPrice() == null) && item.getBruttoAprDate() == null
+					if (!item.isExcludeInPaymentList() && (item.getBruttoAprPrice() == null) && item.getBruttoAprDate() == null
 							&& item.getPayment().getAktBruttoPrice() != null
 							&& item.getPayment().getAktBruttoPrice() != 0.00) {
 						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
@@ -1456,7 +1457,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 					}
 					break;
 				case 4:
-					if ((item.getBruttoMaiPrice() == null) && item.getBruttoMaiDate() == null
+					if (!item.isExcludeInPaymentList() && (item.getBruttoMaiPrice() == null) && item.getBruttoMaiDate() == null
 							&& item.getPayment().getAktBruttoPrice() != null
 							&& item.getPayment().getAktBruttoPrice() != 0.00) {
 						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
@@ -1466,7 +1467,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 					}
 					break;
 				case 5:
-					if ((item.getBruttoJunPrice() == null) && item.getBruttoJunDate() == null
+					if (!item.isExcludeInPaymentList() && (item.getBruttoJunPrice() == null) && item.getBruttoJunDate() == null
 							&& item.getPayment().getAktBruttoPrice() != null
 							&& item.getPayment().getAktBruttoPrice() != 0.00) {
 						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
@@ -1477,7 +1478,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 					}
 					break;
 				case 6:
-					if ((item.getBruttoJulPrice() == null) && item.getBruttoJulDate() == null
+					if (!item.isExcludeInPaymentList() && (item.getBruttoJulPrice() == null) && item.getBruttoJulDate() == null
 							&& item.getPayment().getAktBruttoPrice() != null
 							&& item.getPayment().getAktBruttoPrice() != 0.00) {
 						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
@@ -1487,7 +1488,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 					}
 					break;
 				case 7:
-					if ((item.getBruttoAugPrice() == null) && item.getBruttoAugDate() == null
+					if (!item.isExcludeInPaymentList() && (item.getBruttoAugPrice() == null) && item.getBruttoAugDate() == null
 							&& item.getPayment().getAktBruttoPrice() != null
 							&& item.getPayment().getAktBruttoPrice() != 0.00) {
 						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
@@ -1497,7 +1498,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 					}
 					break;
 				case 8:
-					if ((item.getBruttoSepPrice() == null) && item.getBruttoSepDate() == null
+					if (!item.isExcludeInPaymentList() && (item.getBruttoSepPrice() == null) && item.getBruttoSepDate() == null
 							&& item.getPayment().getAktBruttoPrice() != null
 							&& item.getPayment().getAktBruttoPrice() != 0.00) {
 						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
@@ -1507,7 +1508,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 					}
 					break;
 				case 9:
-					if ((item.getBruttoOctPrice() == null) && item.getBruttoOctDate() == null
+					if (!item.isExcludeInPaymentList() && (item.getBruttoOctPrice() == null) && item.getBruttoOctDate() == null
 							&& item.getPayment().getAktBruttoPrice() != null
 							&& item.getPayment().getAktBruttoPrice() != 0.00) {
 						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
@@ -1517,7 +1518,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 					}
 					break;
 				case 10:
-					if ((item.getBruttoNovPrice() == null) && item.getBruttoNovDate() == null
+					if (!item.isExcludeInPaymentList() && (item.getBruttoNovPrice() == null) && item.getBruttoNovDate() == null
 							&& item.getPayment().getAktBruttoPrice() != null
 							&& item.getPayment().getAktBruttoPrice() != 0.00) {
 						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
@@ -1527,7 +1528,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 					}
 					break;
 				case 11:
-					if ((item.getBruttoDecPrice() == null) && item.getBruttoDecDate() == null
+					if (!item.isExcludeInPaymentList() && (item.getBruttoDecPrice() == null) && item.getBruttoDecDate() == null
 							&& item.getPayment().getAktBruttoPrice() != null
 							&& item.getPayment().getAktBruttoPrice() != 0.00) {
 						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
