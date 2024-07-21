@@ -104,14 +104,14 @@ public class GenerateContract  extends Document {
       Collections.sort(boxNr);
       context.setListBoxNumber(boxNr.toString());
     } else {
-      context.setListBoxNumber("");
+      context.setListBoxNumber("-");
     }  
     
     if(! parkplatzNr.isEmpty()) {
        Collections.sort(parkplatzNr);
        context.setListStandplatzNumber(parkplatzNr.toString());
     } else {
-      context.setListStandplatzNumber("");
+      context.setListStandplatzNumber("-");
     }
           
     List <LEbox> sortedListBox  = list.stream()
