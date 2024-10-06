@@ -19,7 +19,6 @@ import com.ebox3.server.model.ContractHistory;
 import com.ebox3.server.model.Ebox;
 import com.ebox3.server.model.Payment;
 
-
 public class HelpFunctions {
 
 	private final Log logger = LogFactory.getLog(getClass());
@@ -275,7 +274,7 @@ public class HelpFunctions {
 			payment = list.get(0);
 			// update
 			Double newPrice = null;
-			List<Long> newBoxCount = null;
+			List<Long> newBoxCount = new ArrayList<Long>();
 
 			if (ebox.getStatusText().equals("gekündigt")) {
 				payment.setTerminateDate(ebox.getTerminateDate());

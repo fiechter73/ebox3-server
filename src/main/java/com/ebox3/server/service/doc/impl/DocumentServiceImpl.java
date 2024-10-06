@@ -45,38 +45,34 @@ public class DocumentServiceImpl extends CalcHelper implements DocumentService {
 		response.setContentType("application/msword");
 		response.setHeader(HttpHeaders.CONTENT_TYPE, "application/msword; charset=UTF-8");
 
-		File file = null;
-		InputStream template = null;
-		OutputStream outputStream = null;
+		File file = new File(getOutputPath() + "outOffer.docx");
 
-		try {
-			template = loadClassPathResource(getTemplatesPath() + "Offerte.docx");
-			file = loadOutputFile(getOutputPath() + "outOffer.docx");
-			outputStream = new FileOutputStream(file);
+		try (InputStream template = loadClassPathResource(getTemplatesPath() + "Offerte.docx");
+				OutputStream outputStream = new FileOutputStream(file)) {
 
-		} catch (final Exception ex) {
-			logger.info(ex);
-			response.sendError(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
-		}
+			Contract contract = getContract(id);
 
-		if (file.isFile()) {
-			try {
-				Contract con = getContract(id);
-				while (!new GenerateContract().generateDocOffering(con, template, outputStream)) {
-					logger.info("Wait....");
-				}
+			while (!new GenerateContract().generateDocOffering(contract, template, outputStream)) {
+				logger.info("Waiting for document generation...");
+			}
+			logger.info("Document generation complete.");
+
+			if (file.exists() && file.isFile()) {
 				response.setStatus(HttpStatus.OK.value());
-				Files.copy(file, response.getOutputStream());
-				response.getOutputStream().flush();
-				template.close();
-				outputStream.close();
-				logger.info("KB Offerte: "
-						+ (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024);
-
-			} catch (Exception ex) {
-				response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), ex.getMessage());
+				try (OutputStream responseStream = response.getOutputStream()) {
+					Files.copy(file, responseStream);
+					responseStream.flush();
+				}
+			} else {
+				response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Generated file not found or invalid.");
 			}
 
+			logger.info("Memory usage after contract generation: " +
+					(double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + " KB");
+
+		} catch (Exception ex) {
+			logger.error("Error during contract document generation: ", ex);
+			response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error");
 		}
 	}
 
@@ -87,43 +83,44 @@ public class DocumentServiceImpl extends CalcHelper implements DocumentService {
 		response.setContentType("application/msword");
 		response.setHeader(HttpHeaders.CONTENT_TYPE, "application/msword; charset=UTF-8");
 
-		File file = null;
-		InputStream template = null;
-		OutputStream outputStream = null;
-		try {
+		File file = new File(getOutputPath() + "outMahnung.docx");
 
-			template = loadClassPathResource(getTemplatesPath() + "Mahnung.docx");
-			file = loadOutputFile(getOutputPath() + "outManhnung.docx");
-			outputStream = new FileOutputStream(file);
+		try (InputStream template = loadClassPathResource(getTemplatesPath() + "Mahnung.docx");
+				OutputStream outputStream = new FileOutputStream(file)) {
+
+			Customer customer = null;
+			if ("mahnung".equalsIgnoreCase(type)) {
+				customer = getCustomer(id);
+			}
+
+			if (customer == null) {
+				response.sendError(HttpStatus.BAD_REQUEST.value(), "Customer not found for id: " + id);
+				return;
+			}
+
+			// Generate letter
+			while (!new GenerateLetters().generateLetterMahung(customer, template, outputStream)) {
+				logger.info("Wait....");
+			}
+			logger.info("Done....");
+
+			// Datei im Response streamen
+			if (file.exists() && file.isFile()) {
+				response.setStatus(HttpStatus.OK.value());
+				try (OutputStream responseStream = response.getOutputStream()) {
+					Files.copy(file, responseStream);
+					responseStream.flush();
+				}
+			} else {
+				response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "File not found or not valid.");
+			}
+
+			logger.info("KB Letter: " +
+					(double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024);
 
 		} catch (final Exception ex) {
-			response.sendError(HttpStatus.BAD_REQUEST.value(), "File not found!");
-		}
-		if (file.isFile()) {
-			try {
-
-				Customer cust = null;
-				if (type.contentEquals("mahnung")) {
-					cust = getCustomer(id);
-				}
-
-				while (!new GenerateLetters().generateLetterMahung(cust, template, outputStream)) {
-					logger.info("Wait....");
-				}
-				logger.info("Done....");
-
-				response.setStatus(HttpStatus.OK.value());
-				Files.copy(file, response.getOutputStream());
-				response.getOutputStream().flush();
-				template.close();
-				outputStream.close();
-
-				logger.info("KB Letter: "
-						+ (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024);
-
-			} catch (Exception ex) {
-				response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error");
-			}
+			logger.error("Error during document generation: ", ex);
+			response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error");
 		}
 	}
 
@@ -133,40 +130,43 @@ public class DocumentServiceImpl extends CalcHelper implements DocumentService {
 
 		response.setContentType("application/msword");
 		response.setHeader(HttpHeaders.CONTENT_TYPE, "application/msword; charset=UTF-8");
-		File file = null;
-		InputStream template = null;
-		OutputStream outputStream = null;
 
-		try {
-			template = loadClassPathResource(getTemplatesPath() + "Kundenliste.docx");
-			file = loadOutputFile(getOutputPath() + "outKundenliste.docx");
-			outputStream = new FileOutputStream(file);
+		File file = new File(getOutputPath() + "outKundenliste.docx");
 
-		} catch (final Exception ex) {
-			response.sendError(HttpStatus.BAD_REQUEST.value(), "File not found!");
-		}
-		if (file.isFile()) {
-			List<Customer> cust = null;
-			if (type.contentEquals("liste")) {
-				cust = getCustomerByStatusText(id);
+		try (InputStream template = loadClassPathResource(getTemplatesPath() + "Kundenliste.docx");
+				OutputStream outputStream = new FileOutputStream(file)) {
+
+			List<Customer> customers = null;
+			if ("liste".equalsIgnoreCase(type)) {
+				customers = getCustomerByStatusText(id);
 			}
-			try {
 
-				while (!new GenerateLists().generateDocList(cust, template, outputStream)) {
-					logger.info("Wait....");
-				}
-				logger.info("Done....");
+			if (customers == null || customers.isEmpty()) {
+				response.sendError(HttpStatus.BAD_REQUEST.value(), "No customers found for the given status.");
+				return;
+			}
+
+			while (!new GenerateLists().generateDocList(customers, template, outputStream)) {
+				logger.info("Waiting for document generation...");
+			}
+			logger.info("Document generation complete.");
+
+			if (file.exists() && file.isFile()) {
 				response.setStatus(HttpStatus.OK.value());
-				Files.copy(file, response.getOutputStream());
-				response.getOutputStream().flush();
-				template.close();
-				outputStream.close();
-				logger.info("KB Kundenliste: "
-						+ (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024);
-
-			} catch (Exception ex) {
-				response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error");
+				try (OutputStream responseStream = response.getOutputStream()) {
+					Files.copy(file, responseStream);
+					responseStream.flush();
+				}
+			} else {
+				response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Generated file not found or invalid.");
 			}
+
+			logger.info("Memory usage after customer list generation: "
+					+ (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + " KB");
+
+		} catch (Exception ex) {
+			logger.error("Error during customer list document generation: ", ex);
+			response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error");
 		}
 	}
 
@@ -176,44 +176,45 @@ public class DocumentServiceImpl extends CalcHelper implements DocumentService {
 
 		response.setContentType("application/msword");
 		response.setHeader(HttpHeaders.CONTENT_TYPE, "application/msword; charset=UTF-8");
-		File file = null;
-		InputStream template = null;
-		OutputStream outputStream = null;
-		try {
-			template = loadClassPathResource(getTemplatesPath() + "eBill.docx");
-			file = loadOutputFile(getOutputPath() + "outeBill.docx");
-			outputStream = new FileOutputStream(file);
-		} catch (Exception e) {
-			response.sendError(HttpStatus.BAD_REQUEST.value(), "File not found!");
-		}
 
-		if (file.isFile()) {
+		File file = new File(getOutputPath() + "outeBill.docx");
 
-			final List<ElectricPeriod> list = getElectricPeriods(ids);
-			Customer cust = findAddress(list); // Falls die Box weitervermietet wurde muss die richtige Adresse bei der
-												// Stromabrechnung berücksichtigt werden!
+		try (InputStream template = loadClassPathResource(getTemplatesPath() + "eBill.docx");
+				OutputStream outputStream = new FileOutputStream(file)) {
+
+			List<ElectricPeriod> periods = getElectricPeriods(ids);
+			Customer customer = findAddress(periods); // Handle sub-leased addresses for electric bills
+
+			if (periods == null || periods.isEmpty() || customer == null) {
+				response.sendError(HttpStatus.BAD_REQUEST.value(), "Invalid customer or periods.");
+				return;
+			}
 
 			GenerateEBill ebill = new GenerateEBill();
-			try {
-
-				while (!ebill.generateDocEBill(cust, list, template, outputStream)) {
-					logger.info("Wait....");
-				}
-				logger.info("Done....");
-
-				ElectricPeriod ep = ebill.getElectricPeriod();
-				updateElectricPeriodPrice(ep.getId(), ep);
-
-				response.setStatus(HttpStatus.OK.value());
-				Files.copy(file, response.getOutputStream());
-				response.getOutputStream().flush();
-				template.close();
-				outputStream.close();
-				logger.info("KB EBill: "
-						+ (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024);
-			} catch (Exception ex) {
-				response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error");
+			while (!ebill.generateDocEBill(customer, periods, template, outputStream)) {
+				logger.info("Waiting for document generation...");
 			}
+			logger.info("Document generation complete.");
+
+			ElectricPeriod ep = ebill.getElectricPeriod();
+			updateElectricPeriodPrice(ep.getId(), ep);
+
+			if (file.exists() && file.isFile()) {
+				response.setStatus(HttpStatus.OK.value());
+				try (OutputStream responseStream = response.getOutputStream()) {
+					Files.copy(file, responseStream);
+					responseStream.flush();
+				}
+			} else {
+				response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Generated file not found or invalid.");
+			}
+
+			logger.info("Memory usage after eBill generation: "
+					+ (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + " KB");
+
+		} catch (Exception ex) {
+			logger.error("Error during electric bill document generation: ", ex);
+			response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error");
 		}
 	}
 
@@ -224,40 +225,40 @@ public class DocumentServiceImpl extends CalcHelper implements DocumentService {
 		response.setContentType("application/msword");
 		response.setHeader(HttpHeaders.CONTENT_TYPE, "application/msword; charset=UTF-8");
 
-		File file = null;
-		InputStream template = null;
-		OutputStream outputStream = null;
-		try {
-			template = loadClassPathResource(getTemplatesPath() + "billingList.docx");
-			file = loadOutputFile(getOutputPath() + "outBillingList.docx");
-			outputStream = new FileOutputStream(file);
+		File file = new File(getOutputPath() + "outBillingList.docx");
 
-		} catch (Exception e) {
-			response.sendError(HttpStatus.BAD_REQUEST.value(), "File not found!");
-		}
-		if (file.isFile()) {
-			try {
-				List<AdditionalCosts> additionalCostsList = null;
-				additionalCostsList = getAllAdditionalCosts(jahr);
+		try (InputStream template = loadClassPathResource(getTemplatesPath() + "billingList.docx");
+				OutputStream outputStream = new FileOutputStream(file)) {
 
-				while (!new GenerateBillingList().generateCustomerSalesLetter(additionalCostsList, template,
-						outputStream)) {
-					logger.info("Wait....");
-				}
-				logger.info("Done....");
+			List<AdditionalCosts> additionalCostsList = getAllAdditionalCosts(jahr);
 
-				response.setStatus(HttpStatus.OK.value());
-				Files.copy(file, response.getOutputStream());
-				response.getOutputStream().flush();
-				template.close();
-				outputStream.close();
-
-				logger.info("KB BillingList: "
-						+ (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024);
-			} catch (final Exception ex) {
-				response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error");
+			if (additionalCostsList == null || additionalCostsList.isEmpty()) {
+				response.sendError(HttpStatus.BAD_REQUEST.value(), "No additional costs found for the year.");
+				return;
 			}
 
+			while (!new GenerateBillingList().generateCustomerSalesLetter(additionalCostsList, template,
+					outputStream)) {
+				logger.info("Waiting for document generation...");
+			}
+			logger.info("Document generation complete.");
+
+			if (file.exists() && file.isFile()) {
+				response.setStatus(HttpStatus.OK.value());
+				try (OutputStream responseStream = response.getOutputStream()) {
+					Files.copy(file, responseStream);
+					responseStream.flush();
+				}
+			} else {
+				response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Generated file not found or invalid.");
+			}
+
+			logger.info("Memory usage after billing list generation: "
+					+ (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + " KB");
+
+		} catch (Exception ex) {
+			logger.error("Error during billing list document generation: ", ex);
+			response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error");
 		}
 	}
 
@@ -267,36 +268,41 @@ public class DocumentServiceImpl extends CalcHelper implements DocumentService {
 		response.setContentType("application/msword");
 		response.setHeader(HttpHeaders.CONTENT_TYPE, "application/msword; charset=UTF-8");
 
-		File file = null;
-		InputStream template = null;
-		OutputStream outputStream = null;
-		try {
-			file = loadOutputFile(getOutputPath() + "outMZahlungen.docx");
-			template = loadClassPathResource(getTemplatesPath() + "MZahlungen.docx");
-			outputStream = new FileOutputStream(file);
-		} catch (Exception e) {
-			response.sendError(HttpStatus.BAD_REQUEST.value(), "File not found!");
-		}
+		File file = new File(getOutputPath() + "outMZahlungen.docx");
 
-		if (file.isFile()) {
-			try {
-				final List<Payment> listPayment = getPaymenByTenant(jahr);
-				final List<PaymentDatePrice> listPaymentDatePrice = getPaymenDatePricetByTenant(jahr);
-				if (!listPaymentDatePrice.isEmpty()) {
-					while (!new GenerateTenantList().generateDocTenantList(listPaymentDatePrice, listPayment, template,
-							outputStream)) {
-						logger.info("Wait....");
-					}
-					logger.info("Done....");
-					response.setStatus(HttpStatus.OK.value());
-					Files.copy(file, response.getOutputStream());
-					response.getOutputStream().flush();
-					logger.info("KB TenantList: "
-							+ (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024);
-				}
-			} catch (Exception ex) {
-				response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error");
+		try (InputStream template = loadClassPathResource(getTemplatesPath() + "MZahlungen.docx");
+				OutputStream outputStream = new FileOutputStream(file)) {
+
+			List<Payment> listPayment = getPaymenByTenant(jahr);
+			List<PaymentDatePrice> listPaymentDatePrice = getPaymenDatePricetByTenant(jahr);
+
+			if (listPaymentDatePrice == null || listPaymentDatePrice.isEmpty()) {
+				response.sendError(HttpStatus.BAD_REQUEST.value(), "No payment data found for the year.");
+				return;
 			}
+
+			while (!new GenerateTenantList().generateDocTenantList(listPaymentDatePrice, listPayment, template,
+					outputStream)) {
+				logger.info("Waiting for document generation...");
+			}
+			logger.info("Document generation complete.");
+
+			if (file.exists() && file.isFile()) {
+				response.setStatus(HttpStatus.OK.value());
+				try (OutputStream responseStream = response.getOutputStream()) {
+					Files.copy(file, responseStream);
+					responseStream.flush();
+				}
+			} else {
+				response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Generated file not found or invalid.");
+			}
+
+			logger.info("Memory usage after tenant list generation: "
+					+ (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + " KB");
+
+		} catch (Exception ex) {
+			logger.error("Error during tenant bill document generation: ", ex);
+			response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error");
 		}
 	}
 
@@ -307,41 +313,41 @@ public class DocumentServiceImpl extends CalcHelper implements DocumentService {
 		response.setContentType("application/msword");
 		response.setHeader(HttpHeaders.CONTENT_TYPE, "application/msword; charset=UTF-8");
 
-		File file = null;
-		InputStream template = null;
-		OutputStream outputStream = null;
+		File file = new File(getOutputPath() + "outEbillList.docx");
 
-		try {
-			template = loadClassPathResource(getTemplatesPath() + "eBillList.docx");
-			file = loadOutputFile(getOutputPath() + "outEbillList.docx");
-			outputStream = new FileOutputStream(file);
+		try (InputStream template = loadClassPathResource(getTemplatesPath() + "eBillList.docx");
+				OutputStream outputStream = new FileOutputStream(file)) {
 
-		} catch (Exception e) {
-			response.sendError(HttpStatus.BAD_REQUEST.value(), "File not found!");
-		}
+			List<ElectricPeriod> list = getElectricOverwievBilling(jahr, status);
 
-		if (file.isFile()) {
-			try {
-				final List<ElectricPeriod> list = getElectricOverwievBilling(jahr, status);
-
-				if (!list.isEmpty()) {
-					while (!new GenerateEBillOverviewList().generateEbillList(list, template, outputStream)) {
-						logger.info("Wait....");
-					}
-					logger.info("Done....");
-					response.setStatus(HttpStatus.OK.value());
-					Files.copy(file, response.getOutputStream());
-					response.getOutputStream().flush();
-					template.close();
-					outputStream.close();
-					logger.info("KB EBillList: "
-							+ (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024);
-				}
-			} catch (final Exception ex) {
-				response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error");
+			if (list == null || list.isEmpty()) {
+				response.sendError(HttpStatus.BAD_REQUEST.value(),
+						"No billing data found for the specified year and status.");
+				return;
 			}
-		}
 
+			while (!new GenerateEBillOverviewList().generateEbillList(list, template, outputStream)) {
+				logger.info("Waiting for document generation...");
+			}
+			logger.info("Document generation complete.");
+
+			if (file.exists() && file.isFile()) {
+				response.setStatus(HttpStatus.OK.value());
+				try (OutputStream responseStream = response.getOutputStream()) {
+					Files.copy(file, responseStream);
+					responseStream.flush();
+				}
+			} else {
+				response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Generated file not found or invalid.");
+			}
+
+			logger.info("Memory usage after generating E-Bill list: "
+					+ (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + " KB");
+
+		} catch (Exception ex) {
+			logger.error("Error during E-Bill overview document generation: ", ex);
+			response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error");
+		}
 	}
 
 	@Override
@@ -351,88 +357,92 @@ public class DocumentServiceImpl extends CalcHelper implements DocumentService {
 		response.setContentType("application/msword");
 		response.setHeader(HttpHeaders.CONTENT_TYPE, "application/msword; charset=UTF-8");
 
-		File file = null;
-		InputStream template = null;
-		OutputStream outputStream = null;
+		File file = new File(getOutputPath() + "outBillingLetter.docx");
 
-		try {
-			template = loadClassPathResource(getTemplatesPath() + "billingLetter.docx");
-			file = loadOutputFile(getOutputPath() + "outBillingLetter.docx");
-			outputStream = new FileOutputStream(file);
+		try (InputStream template = loadClassPathResource(getTemplatesPath() + "billingLetter.docx");
+				OutputStream outputStream = new FileOutputStream(file)) {
 
-		} catch (Exception e) {
-			response.sendError(HttpStatus.BAD_REQUEST.value(), "File not found!");
-		}
-		if (file.isFile()) {
-			try {
+			AdditionalCosts item = getAdditionalCosts(id);
 
-				final AdditionalCosts item = getAdditionalCosts(id);
-
-				if (item != null) {
-					while (!new GenerateBillingLetter().generateDocBillingLetter(item, template, outputStream)) {
-						logger.info("Wait....");
-					}
-					response.setStatus(HttpStatus.OK.value());
-					Files.copy(file, response.getOutputStream());
-					response.getOutputStream().flush();
-					template.close();
-					outputStream.close();
-					logger.info("KB BillingLetter: "
-							+ (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024);
-				}
-			} catch (Exception ex) {
-				response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error");
+			if (item == null) {
+				response.sendError(HttpStatus.BAD_REQUEST.value(), "Additional costs not found for the specified ID.");
+				return;
 			}
+
+			while (!new GenerateBillingLetter().generateDocBillingLetter(item, template, outputStream)) {
+				logger.info("Waiting for document generation...");
+			}
+			logger.info("Document generation complete.");
+
+			if (file.exists() && file.isFile()) {
+				response.setStatus(HttpStatus.OK.value());
+				try (OutputStream responseStream = response.getOutputStream()) {
+					Files.copy(file, responseStream);
+					responseStream.flush();
+				}
+			} else {
+				response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Generated file not found or invalid.");
+			}
+
+			logger.info("Memory usage after generating billing letter: "
+					+ (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + " KB");
+
+		} catch (Exception ex) {
+			logger.error("Error during billing letter document generation: ", ex);
+			response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error");
 		}
 	}
 
 	@Override
 	public void downloadMwstWordResource(final String year, final Date from, final Date to,
-			final HttpServletResponse response) throws IOException {
+			final HttpServletResponse response)
+			throws IOException {
 
 		response.setContentType("application/msword");
 		response.setHeader(HttpHeaders.CONTENT_TYPE, "application/msword; charset=UTF-8");
 
-		File file = null;
-		InputStream template = null;
-		OutputStream outputStream = null;
-		try {
+		File file = new File(getOutputPath() + "outMwstLetter.docx");
 
-			template = loadClassPathResource(getTemplatesPath() + "mwstLetter.docx");
-			file = loadOutputFile(getOutputPath() + "outMwstLetter.docx");
-			outputStream = new FileOutputStream(file);
+		try (InputStream template = loadClassPathResource(getTemplatesPath() + "mwstLetter.docx");
+				OutputStream outputStream = new FileOutputStream(file)) {
 
-		} catch (Exception e) {
-			response.sendError(HttpStatus.BAD_REQUEST.value(), "File not found!");
-		}
-		if (file.isFile()) {
-			try {
+			List<MwstDTO> itemEbox = getMwstBoxen(from, to);
+			List<MwstDTO> itemStrom = getMwstStrom(from, to);
+			List<MwstDTO> itemRechnungen = getMwstRechnungen(from, to);
 
-				final List<MwstDTO> itemEbox = getMwstBoxen(from, to);
-				final List<MwstDTO> itemStrom = getMwstStrom(from, to);
-				final List<MwstDTO> itemRechnungen = getMwstRechnungen(from, to);
+			itemEbox.forEach(item -> {
+				logger.info(item.getBoxes() + " : " + item.getPayDate());
+			});
 
-				itemEbox.forEach(item -> {
-					logger.info(item.getBoxes() + " : " + item.getPayDate());
-				});
-
-				if (itemEbox != null) {
-					while (!new GenerateMwStLetter().generateDocMwstLetter(itemEbox, itemStrom, itemRechnungen, from,
-							to, template, outputStream)) {
-						logger.info("Wait....");
-					}
-					logger.info("Done....");
-					response.setStatus(HttpStatus.OK.value());
-					Files.copy(file, response.getOutputStream());
-					response.getOutputStream().flush();
-					template.close();
-					outputStream.close();
-					logger.info("KB BillingLetter: "
-							+ (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024);
+			if (itemEbox != null && !itemEbox.isEmpty()) {
+				while (!new GenerateMwStLetter().generateDocMwstLetter(itemEbox, itemStrom, itemRechnungen, from, to,
+						template, outputStream)) {
+					logger.info("Waiting for document generation...");
 				}
-			} catch (Exception ex) {
-				response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error");
+				logger.info("Document generation complete.");
+
+				response.setStatus(HttpStatus.OK.value());
+				if (file.exists() && file.isFile()) {
+					try (OutputStream responseStream = response.getOutputStream()) {
+						Files.copy(file, responseStream);
+						responseStream.flush();
+					}
+				} else {
+					response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+							"Generated file not found or invalid.");
+				}
+
+				logger.info("Memory usage after generating MwSt letter: "
+						+ (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024
+						+ " KB");
+			} else {
+				response.sendError(HttpStatus.BAD_REQUEST.value(), "No data found for the specified date range.");
 			}
+
+		} catch (Exception ex) {
+			logger.error("Error during MwSt document generation: ", ex);
+			response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error");
 		}
 	}
+
 }
