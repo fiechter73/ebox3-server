@@ -4,6 +4,7 @@ import java.util.Date;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
@@ -100,7 +101,7 @@ public class PaymentDatePrice extends AuditModel {
 
 	@Column(name = "bruttoDecDate")
 	private Date bruttoDecDate;
-	
+
 	@Column(name = "excludeInPaymentList")
 	private boolean excludeInPaymentList;
 
@@ -138,7 +139,6 @@ public class PaymentDatePrice extends AuditModel {
 		this.bruttoOctDate = bruttoOctDate;
 		this.bruttoNovDate = bruttoNovDate;
 		this.bruttoDecDate = bruttoDecDate;
-		this.excludeInPaymentList = excludeInPaymentList;
 	}
 
 	public Long getId() {
@@ -352,7 +352,7 @@ public class PaymentDatePrice extends AuditModel {
 	public void setPayment(Payment payment) {
 		this.payment = payment;
 	}
-	
+
 	public boolean isExcludeInPaymentList() {
 		return excludeInPaymentList;
 	}
@@ -360,7 +360,6 @@ public class PaymentDatePrice extends AuditModel {
 	public void setExcludeInPaymentList(boolean excludeInPaymentList) {
 		this.excludeInPaymentList = excludeInPaymentList;
 	}
-
 
 	@Override
 	public String toString() {
@@ -376,9 +375,6 @@ public class PaymentDatePrice extends AuditModel {
 				+ bruttoOctDate + ", bruttoNovDate=" + bruttoNovDate + ", bruttoDecDate=" + bruttoDecDate
 				+ ", excludeInPaymentList=" + excludeInPaymentList + ", payment=" + payment + "]";
 	}
-
-
-
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "paymentId_FK", nullable = false)

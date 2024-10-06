@@ -33,7 +33,7 @@ public class Document {
 
     } else {
       cu.setUseCompanyAddress("Nein");
-      cu.setAnrede(customer.getAnrede());
+      cu.setAnrede(customer.getAnrede() != null ? customer.getAnrede() : "");
       cu.setName(customer.getVorname() + " " + customer.getName());
       cu.setStrasse(customer.getStrasse() != null ? customer.getStrasse() : "");
       String plz = customer.getPlz() != null ? customer.getPlz() : "";
@@ -68,7 +68,6 @@ public class Document {
     });
     return list;
   }
-
 
   protected List<LElectricPeriod> getElectricPeriodByCustomerId(Long id, List<ElectricPeriod> epList) {
 

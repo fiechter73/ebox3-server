@@ -27,7 +27,6 @@ import com.ebox3.server.model.dto.OverviewDTO;
 import com.ebox3.server.repo.ContractRepository;
 import com.ebox3.server.repo.CustomerRepository;
 import com.ebox3.server.repo.EBoxRepository;
-
 import com.ebox3.server.service.CustomerService1;
 
 @Service
@@ -46,7 +45,7 @@ public class CustomerService1Impl extends HelpFunctions implements CustomerServi
 	private ModelMapper mapper;
 
 	@Override
-	public Map<String,Object> getCustomersByList(String search, Boolean isNotCustomer, int page, int size) {
+	public Map<String, Object> getCustomersByList(String search, Boolean isNotCustomer, int page, int size) {
 
 		List<OverviewDTO> listOfOvierviewDTO = new ArrayList<OverviewDTO>();
 		List<Customer> custList = null;
@@ -87,9 +86,6 @@ public class CustomerService1Impl extends HelpFunctions implements CustomerServi
 
 				} else {
 					custList = customerRepository.findCustomerFullSearch(search);
-					if (custList == null) {
-						return response;
-					}
 
 					if (NumberUtils.isCreatable(search)) {
 
@@ -142,7 +138,7 @@ public class CustomerService1Impl extends HelpFunctions implements CustomerServi
 		}
 
 	}
-	
+
 	@Override
 	public CustomerDTO updatePartial(Long id,
 			CustomerDTO customerDTO) throws ResourceNotFoundException {
