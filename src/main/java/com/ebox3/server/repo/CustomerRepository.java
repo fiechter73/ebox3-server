@@ -81,7 +81,7 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 	
 	
 	@Query(value = "SELECT * FROM customer c "
-			+ "WHERE  MATCH(c.name, c.vorname, c.plz, c.strasse, c.ort, c.status_text) "
+			+ "WHERE  MATCH(c.name, c.vorname, c.plz, c.strasse, c.ort, c.status_text, c.tel1) "
 					+ "AGAINST(?1 IN BOOLEAN MODE)", nativeQuery = true)
 	List<Customer> findCustomerFullSearch(String search);
 	

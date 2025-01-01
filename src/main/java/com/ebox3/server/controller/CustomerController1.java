@@ -35,7 +35,7 @@ public class CustomerController1 extends HelpFunctions {
 	@PutMapping("/tanent/update/{id}")
 	public ResponseEntity<CustomerDTO> updatePartial(@PathVariable("id") Long id,
 			@Validated @RequestBody CustomerDTO customerDTO) throws ResourceNotFoundException {
-		return ResponseEntity.ok(customerService1.updatePartial(id, customerDTO));
+	return ResponseEntity.ok(customerService1.updatePartial(id, customerDTO));
 	}
 
 }

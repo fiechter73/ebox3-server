@@ -73,7 +73,7 @@ public class SalesServiceImpl implements SalesService {
 		try {
 			SimpleMailMessage msg = new SimpleMailMessage();
 
-			msg.setTo("claudia.rindlisbacher@einstellbox.ch", "juerg.fiechter@einstellbox.ch");
+			msg.setTo("claudia.rindlisbacher@einstellbox.ch", "juerg.fiechter@einstellbox.ch", "info@einstellbox.ch");
 			msg.setFrom("info@einstellbox.ch");
 			msg.setSubject("Anfrage Objektnummer: " + ids);
 			msg.setText("Name: " + name + "\n" + "Email: " + email + "\n" + "Tel: " + tel + "\n" + "Nachricht: "
