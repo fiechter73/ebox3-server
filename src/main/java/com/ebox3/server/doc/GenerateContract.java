@@ -102,14 +102,14 @@ public class GenerateContract  extends Document {
     
     if (! boxNr.isEmpty()) {
       Collections.sort(boxNr);
-      context.setListBoxNumber(boxNr.toString());
+      context.setListBoxNumber(boxNr.stream().map(String:: valueOf).collect(Collectors.joining(", ")));
     } else {
       context.setListBoxNumber("-");
     }  
     
     if(! parkplatzNr.isEmpty()) {
        Collections.sort(parkplatzNr);
-       context.setListStandplatzNumber(parkplatzNr.toString());
+       context.setListStandplatzNumber(parkplatzNr.stream().map(String:: valueOf).collect(Collectors.joining(", ")));
     } else {
       context.setListStandplatzNumber("-");
     }

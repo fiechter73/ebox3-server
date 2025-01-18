@@ -12,6 +12,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.server.ResponseStatusException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -67,5 +68,15 @@ public class GlobalExceptionHandler {
 		logger.error("Unhandeled exception occured", ex);
 		ErrorMessage err = new ErrorMessage(ex.getMessage(), request.getDescription(false));
 		return new ResponseEntity<ErrorMessage>(err, HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+	
+	@ExceptionHandler(ResponseStatusException.class)
+	public ResponseEntity<Object> handleResponseStatusException(ResponseStatusException ex) {
+		logger.error("ResponseStatusException occured", ex);
+	    return ResponseEntity.status(ex.getStatusCode())
+	            .body(Map.of(
+	                "error", ex.getStatusCode().toString(),  // Der HTTP-Status-Code als String
+	                "message", ex.getReason()               // Die Fehlernachricht
+	            ));
 	}
 }
