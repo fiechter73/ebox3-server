@@ -89,6 +89,9 @@ public class ElectricPeriod {
 
 	@Column(name = "diffkwatt")
 	private Double diffKwatt;
+	
+	@Column(name = "qrReferenceCode")
+	private String qrReferenceCode;
 
 	public ElectricPeriod() {
 	}
@@ -97,7 +100,7 @@ public class ElectricPeriod {
 			Double stromPriceBrutto, Double stromPriceNetto, boolean status, String statusText, String marginStart,
 			String marginStop, Double stromAkontoMonat, Double preiskW, String bemerkungen, Date zahlungEingegangen,
 			Double preisBearbeitungsgebuehr, Double kundenGuthaben, Double mwstSatz, Double mwstPrice, String info,
-			Date printDate, Long customerId, String printAnschrift, Double diffKwatt, ElectricMeter electricMeter) {
+			Date printDate, Long customerId, String printAnschrift, Double diffKwatt, String qrReferenceCode,  ElectricMeter electricMeter) {
 		this.id = id;
 		this.zaehlerStand = zaehlerStand;
 		this.zaehlerFromPeriode = zaehlerFromPeriode;
@@ -121,6 +124,7 @@ public class ElectricPeriod {
 		this.customerId = customerId;
 		this.printAnschrift = printAnschrift;
 		this.diffKwatt = diffKwatt;
+		this.qrReferenceCode = qrReferenceCode;
 	}
 
 	public Long getId() {
@@ -314,6 +318,15 @@ public class ElectricPeriod {
 	public void setZahlungEingegangen(Date zahlungEingegangen) {
 		this.zahlungEingegangen = zahlungEingegangen;
 	}
+	
+	public String getQrReferenceCode() {
+		return qrReferenceCode;
+	}
+
+	public void setQrReferenceCode(String qrReferenceCode) {
+		this.qrReferenceCode = qrReferenceCode;
+	}
+
 
 	@Override
 	public String toString() {
@@ -325,7 +338,8 @@ public class ElectricPeriod {
 				+ zahlungEingegangen + ", preisBearbeitungsgebuehr=" + preisBearbeitungsgebuehr + ", kundenGuthaben="
 				+ kundenGuthaben + ", mwstSatz=" + mwstSatz + ", mwstPrice=" + mwstPrice + ", info=" + info
 				+ ", printDate=" + printDate + ", customerId=" + customerId + ", printAnschrift=" + printAnschrift
-				+ ", diffKwatt=" + diffKwatt + ", electricMeter=" + electricMeter + "]";
+				+ ", diffKwatt=" + diffKwatt + ", qrReferenceCode=" + qrReferenceCode + ", electricMeter=" + electricMeter
+				+ "]";
 	}
 
 	@Override

@@ -30,6 +30,8 @@ public class ContractDTO {
 	private Long minDuration;
 	private Date minDurationDate;
 	private Double retKaution;
+	private String qrReferenceCodeRent;
+	private String qrReferenceCodeDeposit;
 
 	public Long getId() {
 		return id;
@@ -134,7 +136,6 @@ public class ContractDTO {
 	public void setGuthaben(Double guthaben) {
 		this.guthaben = guthaben;
 	}
-	
 
 	public Double getRetKaution() {
 		return retKaution;
@@ -232,6 +233,21 @@ public class ContractDTO {
 		this.checkOutDate = checkOutDate;
 	}
 
+	public String getQrReferenceCodeRent() {
+		return qrReferenceCodeRent;
+	}
+
+	public void setQrReferenceCodeRent(String qrReferenceCodeRent) {
+		this.qrReferenceCodeRent = qrReferenceCodeRent;
+	}
+
+	public String getQrReferenceCodeDeposit() {
+		return qrReferenceCodeDeposit;
+	}
+
+	public void setQrReferenceCodeDeposit(String qrReferenceCodeDeposit) {
+		this.qrReferenceCodeDeposit = qrReferenceCodeDeposit;
+	}
 
 	@Override
 	public String toString() {
@@ -242,7 +258,8 @@ public class ContractDTO {
 				+ custName + ", custAnschrift=" + custAnschrift + ", guthaben=" + guthaben + ", bemerkungen="
 				+ bemerkungen + ", eboxs=" + eboxs + ", additionalCosts=" + additionalCosts + ", contractHistory="
 				+ contractHistory + ", payment=" + payment + ", minDuration=" + minDuration + ", minDurationDate="
-				+ minDurationDate + ", retKaution=" + retKaution + "]";
+				+ minDurationDate + ", retKaution=" + retKaution + ", qrReferenceCodeRent=" + qrReferenceCodeRent
+				+ ", qrReferenceCodeDeposit=" + qrReferenceCodeDeposit + "]";
 	}
 
 	@Override

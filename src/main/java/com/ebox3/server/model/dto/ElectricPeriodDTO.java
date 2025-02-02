@@ -33,6 +33,7 @@ public class ElectricPeriodDTO {
 	private String bemerkungenElektroMeter;
 	private Long electricMeterNumber;
 	private Double diffKwatt;
+	private String qrReferenceCode;
 
 
 	public Double getZaehlerStand() {
@@ -258,6 +259,16 @@ public class ElectricPeriodDTO {
 	public void setPrintAnschrift(String printAnschrift) {
 		this.printAnschrift = printAnschrift;
 	}
+	
+	public String getQrReferenceCode() {
+		return qrReferenceCode;
+	}
+
+	public void setQrReferenceCode(String qrReferenceCode) {
+		this.qrReferenceCode = qrReferenceCode;
+	}
+
+
 
 	@Override
 	public String toString() {
@@ -271,7 +282,8 @@ public class ElectricPeriodDTO {
 				+ ", printDate=" + printDate + ", printAnschrift=" + printAnschrift + ", customerId=" + customerId
 				+ ", customerInformation=" + customerInformation + ", idElectricMeter=" + idElectricMeter
 				+ ", gebaeudeInfos=" + gebaeudeInfos + ", bemerkungenElektroMeter=" + bemerkungenElektroMeter
-				+ ", electricMeterNumber=" + electricMeterNumber + ", diffKwatt=" + diffKwatt + "]";
+				+ ", electricMeterNumber=" + electricMeterNumber + ", diffKwatt=" + diffKwatt + ", qrReferenceCode="
+				+ qrReferenceCode + "]";
 	}
 
 	@Override

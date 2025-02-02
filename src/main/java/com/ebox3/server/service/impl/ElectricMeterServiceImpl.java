@@ -28,7 +28,6 @@ import com.ebox3.server.model.dto.ElectricMeterPeriodDTO;
 import com.ebox3.server.model.dto.ElectricPeriodDTO;
 import com.ebox3.server.repo.CustomerRepository;
 import com.ebox3.server.repo.EBoxRepository;
-import com.ebox3.server.repo.ElectricMeterPeriodRepository;
 import com.ebox3.server.repo.ElectricMeterRepository;
 import com.ebox3.server.service.ElectricMeterService;
 
@@ -40,9 +39,6 @@ public class ElectricMeterServiceImpl implements ElectricMeterService {
 
 	@Autowired
 	EBoxRepository eboxRepository;
-
-	@Autowired
-	ElectricMeterPeriodRepository electricMeterPeriodsRepository;
 
 	@Autowired
 	CustomerRepository customerRepository;

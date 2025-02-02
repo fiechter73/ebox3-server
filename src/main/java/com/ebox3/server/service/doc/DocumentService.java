@@ -18,7 +18,7 @@ public interface DocumentService {
 
 	public void downloadElectricBillWordResource(final String ids, final HttpServletResponse response)
 			throws IOException;
-
+		 
 	public void downloadCustomerSalesListWordResource(final String jahr, final HttpServletResponse response)
 			throws IOException;
 

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ebox3.server.service.QrcodeService;
 import com.ebox3.server.service.doc.DocumentService;
 
 @RestController
@@ -19,6 +20,9 @@ public class DocumentController {
 
 	@Autowired
 	private DocumentService documentService;
+	
+	@Autowired
+	private QrcodeService qrcodeService;
 
 	@RequestMapping("/contract")
 	public void downloadContractWordResource(@RequestParam("id") final Long id, final HttpServletResponse response)
@@ -43,6 +47,21 @@ public class DocumentController {
 			final HttpServletResponse response) throws IOException {
 		documentService.downloadElectricBillWordResource(ids, response);
 	}
+	
+	@RequestMapping("/electricbillqrcode")
+	public void downloadElectricBillQrCodeResource(@RequestParam("idElectricMeter") Long idElectricMeter, @RequestParam("id") final Long id, 
+			@RequestParam("amount")final Double amount, @RequestParam("unstructuredMessage") final String uMessage, @RequestParam("mode") final String mode,
+			final HttpServletResponse response) throws IOException {
+		qrcodeService.generateElectricQrBillCode(idElectricMeter, id, amount, uMessage, mode, response);
+	}
+	
+	@RequestMapping("/vertrag/electricbillqrcode")
+	public void downloadElectricBillRentQrCodeResource(@RequestParam("id") final Long id, 
+			@RequestParam("mode") final String mode,
+			final HttpServletResponse response) throws IOException {
+		qrcodeService.generateElectricRentDepositQrBillCode(id, mode, response);
+	}
+	
 
 	@RequestMapping("/billinglist")
 	public void downloadCustomerSalesListWordResource(@RequestParam("jahr") final String jahr,

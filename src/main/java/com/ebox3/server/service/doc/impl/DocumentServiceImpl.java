@@ -23,6 +23,7 @@ import com.google.common.io.Files;
 
 import jakarta.servlet.http.HttpServletResponse;
 
+
 @Service
 public class DocumentServiceImpl extends CalcHelper implements DocumentService {
 
@@ -229,6 +230,10 @@ public class DocumentServiceImpl extends CalcHelper implements DocumentService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
         }
     }
+    
+   
+
+
 
     @Override
     public void downloadCustomerSalesListWordResource(final String jahr, final HttpServletResponse response) throws IOException {

@@ -29,7 +29,7 @@ public class ElectricMeterPeriodServiceImpl implements ElectricMeterPeriodServic
 	ElectricMeterRepository electricMeterRepository;
 
 	@Autowired
-	ElectricMeterPeriodRepository electricMeterPeriodsRepository;
+	ElectricMeterPeriodRepository electricMeterPeriodRepository;
 
 	@Autowired
 	private ModelMapper mapper;
@@ -179,7 +179,7 @@ public class ElectricMeterPeriodServiceImpl implements ElectricMeterPeriodServic
 //  }
 	@Override
 	public ElectricPeriodDTO getElectricMeterPeriodstById(Long id) {
-		ElectricPeriod electricPeriod = electricMeterPeriodsRepository.findById(id).orElseThrow(
+		ElectricPeriod electricPeriod = electricMeterPeriodRepository.findById(id).orElseThrow(
 				() -> new ResourceNotFoundException(String.format("Electric Period by id %d not found", id)));
 		return mapper.map(electricPeriod, ElectricPeriodDTO.class);
 	}
@@ -189,49 +189,49 @@ public class ElectricMeterPeriodServiceImpl implements ElectricMeterPeriodServic
 		return electricMeterRepository.findById(id).map(electricMeter -> {
 			ElectricPeriod ep = mapper.map(electricPeriodDTO, ElectricPeriod.class);
 			ep.setElectricMeter(electricMeter);
-			return mapper.map(electricMeterPeriodsRepository.save(ep), ElectricPeriodDTO.class);
+			return mapper.map(electricMeterPeriodRepository.save(ep), ElectricPeriodDTO.class);
 		}).orElseThrow(() -> new ResourceNotFoundException("ElectricMeterId " + id + " not found"));
 	}
 
 	@Override
 	public ElectricPeriodDTO update(Long id, ElectricPeriodDTO electricPeriodDTO) {
 
-		return electricMeterPeriodsRepository.findById(id).map(electricPeriod -> {
+		return electricMeterPeriodRepository.findById(id).map(electricPeriod -> {
 			electricPeriod.setStatus(electricPeriodDTO.getStatusText().equals("bezahlt") ? true : false);
 			ElectricPeriod ep = mapper.map(electricPeriodDTO, ElectricPeriod.class);
 			ep.setStatus(electricPeriod.isStatus());
 			ep.setElectricMeter(electricPeriod.getElectricMeter());
-			return mapper.map(electricMeterPeriodsRepository.save(ep), ElectricPeriodDTO.class);
+			return mapper.map(electricMeterPeriodRepository.save(ep), ElectricPeriodDTO.class);
 		}).orElseThrow(() -> new ResourceNotFoundException("Period " + id + " not found"));
 	}
 
 	@Override
 	public ElectricPeriodDTO updateElectricPeriodMarging(Long id, ElectricPeriodDTO electricPeriodDTO) {
 
-		return electricMeterPeriodsRepository.findById(id).map(electricPeriod -> {
+		return electricMeterPeriodRepository.findById(id).map(electricPeriod -> {
 			electricPeriod.setMarginStart(electricPeriodDTO.getMarginStart());
 			electricPeriod.setMarginStop(electricPeriodDTO.getMarginStop());
-			return mapper.map(electricMeterPeriodsRepository.save(electricPeriod), ElectricPeriodDTO.class);
+			return mapper.map(electricMeterPeriodRepository.save(electricPeriod), ElectricPeriodDTO.class);
 		}).orElseThrow(() -> new ResourceNotFoundException("PeriodId " + id + " not found"));
 	}
 
 	@Override
 	public ElectricPeriodDTO updateElectricPeriodStatus(Long id, ElectricPeriodDTO electricPeriodDTO) {
 
-		return electricMeterPeriodsRepository.findById(id).map(electricPeriod -> {
+		return electricMeterPeriodRepository.findById(id).map(electricPeriod -> {
 			electricPeriod.setStatus(electricPeriodDTO.isStatus());
 			electricPeriod.setStatusText(electricPeriodDTO.getStatusText());
 			electricPeriod.setZahlungEingegangen(electricPeriodDTO.getZahlungEingegangen());
-			return mapper.map(electricMeterPeriodsRepository.save(electricPeriod), ElectricPeriodDTO.class);
+			return mapper.map(electricMeterPeriodRepository.save(electricPeriod), ElectricPeriodDTO.class);
 		}).orElseThrow(() -> new ResourceNotFoundException("PeriodId " + id + " not found"));
 	}
 
 	@Override
 	public Long delete(Long id) throws ResourceNotFoundException {
-		ElectricPeriod electricPeriod = electricMeterPeriodsRepository.findById(id)
+		ElectricPeriod electricPeriod = electricMeterPeriodRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("ElectricPeriod not found on :: " + id));
 		if (electricPeriod != null) {
-			electricMeterPeriodsRepository.delete(electricPeriod);
+			electricMeterPeriodRepository.delete(electricPeriod);
 		}
 		return id;
 	}

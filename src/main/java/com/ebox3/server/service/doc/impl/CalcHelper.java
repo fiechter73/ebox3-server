@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
@@ -102,7 +103,6 @@ public class CalcHelper {
 
 		Date startDate = from;
 		Date endDate = to;
-
 
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(endDate);
@@ -552,6 +552,64 @@ public class CalcHelper {
 		Resource resource = new ClassPathResource(path);
 		logger.info("Erkannter Pfad loadClassPathResource: " + resource.getURL().getPath());
 		return resource.getInputStream();
+	}
+
+	public String generateQRReference() {
+		// Länge der Zufallszahl
+		int randomPartLength = 10; // Zufallszahl ist 10-stellig
+		int totalLength = 26; // QR-Referenz ohne Prüfziffer ist 26-stellig
+
+		// Zufallszahl generieren
+		String randomPart = generateRandomNumber(randomPartLength);
+		//logger.info("randomPart: " + randomPart);
+
+		// Restliche Stellen mit Nullen auffüllen
+		String paddedPart = String.format("%0" + (totalLength - randomPartLength) + "d%s", 0, randomPart);
+		//logger.info("paddedPart: " + paddedPart);
+
+		// Prüfziffer berechnen
+		int checksum = mod10(paddedPart);
+		//logger.info("checksum: " + checksum);
+
+		// Vollständige Referenz (Rohreferenz + Prüfziffer)
+		String finalReference = paddedPart + checksum;
+		logger.info("finalReference: " + finalReference);
+
+		// Validierung der finalen Referenz (muss 27 Zeichen haben)
+		if (finalReference.length() != 27) {
+			throw new IllegalArgumentException("Die generierte QR-Referenz ist ungültig: " + finalReference);
+		}
+
+		return finalReference;
+	}
+
+	private String generateRandomNumber(int length) {
+		Random random = new Random();
+		StringBuilder number = new StringBuilder();
+
+		for (int i = 0; i < length; i++) {
+			number.append(random.nextInt(10)); // Zufällige Ziffer (0–9)
+		}
+
+		return number.toString();
+	}
+
+	private static int mod10(String input) {
+
+		// Tabelle für die Modulo-10-Berechnung
+		int[] table = { 0, 9, 4, 6, 8, 2, 7, 1, 3, 5 };
+		int carry = 0;
+
+		// Iteriere durch jede Ziffer des Strings
+		for (int i = 0; i < input.length(); i++) {
+			int digit = Character.getNumericValue(input.charAt(i));
+			carry = table[(carry + digit) % 10];
+		}
+
+		// Berechne die Prüfziffer
+		int checksum = (10 - carry) % 10;
+
+		return checksum;
 	}
 
 }
