@@ -281,8 +281,7 @@ public class ElectricMeterServiceImpl implements ElectricMeterService {
 						+ electricMeter.getEbox().getContract().getCustomer().getName());
 
 				emDTO.setCustomerId(electricMeter.getEbox().getContract().getCustomer().getId());
-				emDTO.setAnschriftMieter(electricMeter.getEbox().getContract().getCustomer().getId() + " - "
-						+ electricMeter.getEbox().getContract().getCustomer().getAnrede() + " "
+				emDTO.setAnschriftMieter(electricMeter.getEbox().getContract().getCustomer().getAnrede() + " "
 						+ electricMeter.getEbox().getContract().getCustomer().getVorname() + " "
 						+ electricMeter.getEbox().getContract().getCustomer().getName());
 			} else {
