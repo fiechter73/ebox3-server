@@ -219,7 +219,9 @@ public class PaymentServiceImpl implements PaymentService {
 					+ payment.getContract().getCustomer().getName());
 			dto.setCustomerAddress(payment.getContract().getCustomer().getStrasse() + " "
 					+ payment.getContract().getCustomer().getPlz() + " "
-					+ payment.getContract().getCustomer().getOrt());
+					+ payment.getContract().getCustomer().getOrt() + " Tel: " 
+			        + payment.getContract().getCustomer().getTel1());
+	
 			dto.setCustomerCompany(payment.getContract().getCustomer().getFirmenName() != null
 					? payment.getContract().getCustomer().getFirmenName()
 					: null);
