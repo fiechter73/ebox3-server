@@ -16,9 +16,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.ebox3.server.exception.ResourceNotFoundException;
+import com.ebox3.server.model.AdditionalCosts;
 import com.ebox3.server.model.Contract;
 import com.ebox3.server.model.Customer;
 import com.ebox3.server.model.ElectricPeriod;
+import com.ebox3.server.repo.AdditionalCostsRepository;
 import com.ebox3.server.repo.ContractRepository;
 import com.ebox3.server.repo.CustomerRepository;
 import com.ebox3.server.repo.ElectricMeterPeriodRepository;
@@ -48,6 +50,9 @@ public class QrcodeServiceImpl extends CalcHelper implements QrcodeService {
 
 	@Autowired
 	ElectricMeterPeriodRepository electricMeterPeriodRepository;
+
+	@Autowired
+	AdditionalCostsRepository additionalCostsRepository;
 
 	@Override
 	public void generateElectricRentDepositQrBillCode(final Long id, final String mode,
@@ -170,8 +175,10 @@ public class QrcodeServiceImpl extends CalcHelper implements QrcodeService {
 	}
 
 	@Override
-	public void generateElectricQrBillCode(final Long idElectricMeter, final Long id, final Double amount,
-			final String uMessage, final String mode, final HttpServletResponse response) throws IOException {
+	public void generateQrBillCode(final Long idModul, final Long idCustomer, final Double amount,
+			final String uMessage, final String mode, String modul, final HttpServletResponse response)
+			throws IOException {
+
 		// Eingabevalidierung
 		if (amount == null || amount <= 0) {
 			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
@@ -185,9 +192,9 @@ public class QrcodeServiceImpl extends CalcHelper implements QrcodeService {
 		response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=qrcodeBill.pdf");
 
 		// Kunde abrufen
-		Customer customer = customerRepository.findById(id)
+		Customer customer = customerRepository.findById(idCustomer)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-						String.format("Customer by id %d not found", id)));
+						String.format("Customer by id %d not found", idCustomer)));
 
 		// Setup Bill
 		Bill bill = new Bill();
@@ -214,8 +221,16 @@ public class QrcodeServiceImpl extends CalcHelper implements QrcodeService {
 
 		// Referenz generieren
 		try {
-			ElectricPeriod ep = updateQrReference(idElectricMeter);
-			bill.setReference(ep.getQrReferenceCode());
+			if (modul.equals("Electric")) {
+				ElectricPeriod ep = updateQrReferenceElectric(idModul);
+				bill.setReference(ep.getQrReferenceCode());
+			} else if (modul.equals("Billing")) {
+				AdditionalCosts ad = updateQrReferenceBilling(idModul);
+				bill.setReference(ad.getQrReferenceCode());
+			} else {
+				logger.info("Keine Referenz gesetzt!");
+			}
+
 		} catch (RuntimeException e) {
 			new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, String.format(e.getMessage()));
 		}
@@ -270,11 +285,19 @@ public class QrcodeServiceImpl extends CalcHelper implements QrcodeService {
 		}
 	}
 
-	private ElectricPeriod updateQrReference(Long epId) throws ResourceNotFoundException {
+	private ElectricPeriod updateQrReferenceElectric(Long epId) throws ResourceNotFoundException {
 		ElectricPeriod ep = electricMeterPeriodRepository.findById(epId).orElseThrow(
 				() -> new ResourceNotFoundException(String.format("ElectricPeriod by id %d not found", epId)));
 		ep.setQrReferenceCode(generateQRReference());
 		return electricMeterPeriodRepository.save(ep);
+	}
+
+	private AdditionalCosts updateQrReferenceBilling(Long id) throws ResourceNotFoundException {
+		AdditionalCosts ac = additionalCostsRepository.findById(id).orElseThrow(
+				() -> new ResourceNotFoundException(String.format("AdditionalCosts by id %d not found", id)));
+		ac.setQrReferenceCode(generateQRReference());
+		return additionalCostsRepository.save(ac);
+
 	}
 
 	private Contract updateQrReferenceContract(Long cId, String mode) throws ResourceNotFoundException {

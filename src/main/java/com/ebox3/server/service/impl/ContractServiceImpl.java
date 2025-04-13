@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.support.PagedListHolder;
 import org.springframework.dao.InvalidDataAccessResourceUsageException;
@@ -149,19 +150,33 @@ public class ContractServiceImpl extends HelpFunctions implements ContractServic
 
 	@Override
 	public ContractDTO getContractById(Long id) {
-		Contract contract = contractRepository.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException(String.format("Contract by id %d not found", id)));
-		ContractDTO coDTO = mapper.map(contract, ContractDTO.class);
-		coDTO.setCustId(contract.getCustomer().getId());
-		coDTO.setCustName(contract.getCustomer().getAnrede() + " " + contract.getCustomer().getVorname() + " "
-				+ contract.getCustomer().getName());
-		coDTO.setCustAnschrift(contract.getCustomer().getStrasse() + " " + contract.getCustomer().getPlz() + " "
-				+ contract.getCustomer().getOrt());
-		List<EboxDTO> eboxes = contract.getEboxs().stream()
-				.map(ebox -> mapper.map(ebox, EboxDTO.class))
-				.collect(Collectors.toList());
-		coDTO.setEboxs(eboxes);
-		return coDTO;
+	    Contract contract = contractRepository.findById(id)
+	            .orElseThrow(() -> new ResourceNotFoundException(String.format("Contract by id %d not found", id)));
+
+	    ContractDTO dto = mapper.map(contract, ContractDTO.class);
+
+	    var customer = contract.getCustomer();
+	    if (customer != null) {
+	        dto.setCustId(customer.getId());
+	        dto.setCustName(String.format("%s %s %s",
+	                customer.getAnrede(),
+	                customer.getVorname(),
+	                customer.getName()));
+
+	        dto.setCustAnschrift(String.format("%s %s %s",
+	                customer.getStrasse(),
+	                customer.getPlz(),
+	                customer.getOrt()));
+	    }
+
+	    if (contract.getEboxs() != null && !contract.getEboxs().isEmpty()) {
+	        List<EboxDTO> eboxes = contract.getEboxs().stream()
+	                .map(ebox -> mapper.map(ebox, EboxDTO.class))
+	                .collect(Collectors.toList());
+	        dto.setEboxs(eboxes);
+	    }
+
+	    return dto;
 	}
 
 	@Override
@@ -191,29 +206,46 @@ public class ContractServiceImpl extends HelpFunctions implements ContractServic
 
 	@Override
 	public ContractDTO update(Long id, ContractDTO contractDTO) throws ResourceNotFoundException {
-		Contract contract = contractRepository.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException(String.format("Contract not found by id: %d", id)));
+	    Contract contract = contractRepository.findById(id)
+	            .orElseThrow(() -> new ResourceNotFoundException(
+	                    String.format("Contract not found by id: %d", id)));
 
-		contract.setActive(contractDTO.isActive() == true ? contractDTO.isActive() : contract.isActive());
-		contract.setStatusText(
-				contractDTO.getStatusText() != null ? contractDTO.getStatusText() : contract.getStatusText());
-		contract.setBemerkungen(contractDTO.getBemerkungen() != null && contractDTO.getBemerkungen().length() > 0
-				? contractDTO.getBemerkungen()
-				: null);
+	    // Manuelle Aktualisierungen wichtiger Felder
+	    if (contractDTO.isActive()) {
+	        contract.setActive(true);
+	    }
 
-		// mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+	    if (contractDTO.getStatusText() != null) {
+	        contract.setStatusText(contractDTO.getStatusText());
+	    }
 
-		mapper.typeMap(ContractDTO.class, Contract.class).addMappings(mapper -> {
-			mapper.skip(Contract::setId);
-			mapper.skip(Contract::setActive);
-			mapper.skip(Contract::setBemerkungen);
-			mapper.skip(Contract::setCustomer);
-		}).map(contractDTO, contract);
-		contractRepository.save(contract);
-		return contractDTO;
+	    String bemerkungen = contractDTO.getBemerkungen();
+	    if (bemerkungen != null && !bemerkungen.isBlank()) {
+	        contract.setBemerkungen(bemerkungen);
+	    }
 
+	    // Lokaler Mapper für restliches Mapping (ohne id, customer etc.)
+	    ModelMapper mapper = new ModelMapper();
+	    mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+
+	    mapper.createTypeMap(ContractDTO.class, Contract.class)
+	          .addMappings(m -> {
+	              m.skip(Contract::setId);
+	              m.skip(Contract::setActive);
+	              m.skip(Contract::setBemerkungen);
+	              m.skip(Contract::setCustomer);
+	              m.skip(Contract::setQrReferenceCodeRent);
+	              m.skip(Contract::setQrReferenceCodeDeposit);
+	          });
+
+	    mapper.map(contractDTO, contract);
+
+	    contractRepository.save(contract);
+	    return contractDTO;
 	}
 
+	
+	
 	@Override
 	public ContractDTO updateContractCheckout(Long id, ContractDTO contractDTO) {
 

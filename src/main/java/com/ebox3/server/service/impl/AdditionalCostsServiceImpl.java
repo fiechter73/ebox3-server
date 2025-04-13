@@ -123,13 +123,20 @@ public class AdditionalCostsServiceImpl implements AdditionalCostsService {
 		AdditionalCosts addCosts = additionalCostsRepository.findById(id).orElseThrow(
 				() -> new ResourceNotFoundException(String.format("AdditionalCosts not found by id: %d", id)));
 
-		mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+		// Lokaler Mapper, um Konflikte zu vermeiden
+		ModelMapper localMapper = new ModelMapper();
+		localMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
-		mapper.typeMap(AdditionalCostsDTO.class, AdditionalCosts.class).addMappings(mapper -> {
+		// Explizites Mapping ohne id und contract
+		localMapper.createTypeMap(AdditionalCostsDTO.class, AdditionalCosts.class).addMappings(mapper -> {
 			mapper.skip(AdditionalCosts::setId);
 			mapper.skip(AdditionalCosts::setContract);
-		}).map(additionalCostsDTO, addCosts);
-		return mapper.map(additionalCostsRepository.save(addCosts), AdditionalCostsDTO.class);
+			mapper.skip(AdditionalCosts::setQrReferenceCode);
+		});
+
+		localMapper.map(additionalCostsDTO, addCosts);
+
+		return localMapper.map(additionalCostsRepository.save(addCosts), AdditionalCostsDTO.class);
 	}
 
 	@Override

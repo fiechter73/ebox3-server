@@ -82,14 +82,17 @@ public class AdditionalCosts extends AuditModel {
 	@Column(name = "sumBruttoPrice")
 	private Double sumBruttoPrice;
 
+	@Column(name = "qrReferenceCode")
+	private String qrReferenceCode;
+
 	public AdditionalCosts() {
 	}
 
 	public AdditionalCosts(Long id, String rechnungsart, String statusText, Date billingDate, String title, String text,
 			String positiontext1, Double positionprice1, String positiontext2, Double positionprice2,
 			String positiontext3, Double positionprice3, String positiontext4, Double positionprice4,
-			String positiontext5, Double positionprice5, Double mwstPrice, Double mwstSatz, Double sumBruttoPrice,
-			Contract contract) {
+			String positiontext5, Double positionprice5, Double mwstPrice, Double mwstSatz, String qrReferenceCode,
+			Double sumBruttoPrice, Contract contract) {
 		this.id = id;
 		this.rechnungsart = rechnungsart;
 		this.statusText = statusText;
@@ -109,6 +112,7 @@ public class AdditionalCosts extends AuditModel {
 		this.mwstPrice = mwstPrice;
 		this.mwstSatz = mwstSatz;
 		this.sumBruttoPrice = sumBruttoPrice;
+		this.qrReferenceCode = qrReferenceCode;
 
 	}
 
@@ -272,6 +276,15 @@ public class AdditionalCosts extends AuditModel {
 		this.billingDate = billingDate;
 	}
 
+	public String getQrReferenceCode() {
+		return qrReferenceCode;
+	}
+
+	public void setQrReferenceCode(String qrReferenceCode) {
+		this.qrReferenceCode = qrReferenceCode;
+
+	}
+
 	@Override
 	public String toString() {
 		return "AdditionalCosts [id=" + id + ", rechnungsart=" + rechnungsart + ", statusText=" + statusText
@@ -280,7 +293,8 @@ public class AdditionalCosts extends AuditModel {
 				+ ", positionprice2=" + positionprice2 + ", positiontext3=" + positiontext3 + ", positionprice3="
 				+ positionprice3 + ", positiontext4=" + positiontext4 + ", positionprice4=" + positionprice4
 				+ ", positiontext5=" + positiontext5 + ", positionprice5=" + positionprice5 + ", mwstPrice=" + mwstPrice
-				+ ", mwstSatz=" + mwstSatz + ", sumBruttoPrice=" + sumBruttoPrice + ", contract=" + contract + "]";
+				+ ", mwstSatz=" + mwstSatz + ", sumBruttoPrice=" + sumBruttoPrice + ", qrReferenceCode="
+				+ qrReferenceCode + ", contract=" + contract + "]";
 	}
 
 	@ManyToOne(fetch = FetchType.LAZY)

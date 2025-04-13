@@ -42,17 +42,12 @@ public class DocumentController {
 		documentService.downloadCustomerWordResource(type, id, response);
 	}
 
-	@RequestMapping("/electricbill")
-	public void downloadElectricBillWordResource(@RequestParam("ids") final String ids,
-			final HttpServletResponse response) throws IOException {
-		documentService.downloadElectricBillWordResource(ids, response);
-	}
-	
-	@RequestMapping("/electricbillqrcode")
-	public void downloadElectricBillQrCodeResource(@RequestParam("idElectricMeter") Long idElectricMeter, @RequestParam("id") final Long id, 
+	@RequestMapping("/billqrcode")
+	public void downloadElectricBillQrCodeResource(@RequestParam("idModul") Long idModul, @RequestParam("idCustomer") final Long idCustomer, 
 			@RequestParam("amount")final Double amount, @RequestParam("unstructuredMessage") final String uMessage, @RequestParam("mode") final String mode,
+			@RequestParam("modul") final String modul,
 			final HttpServletResponse response) throws IOException {
-		qrcodeService.generateElectricQrBillCode(idElectricMeter, id, amount, uMessage, mode, response);
+		qrcodeService.generateQrBillCode(idModul, idCustomer, amount, uMessage, mode, modul, response);
 	}
 	
 	@RequestMapping("/vertrag/electricbillqrcode")
