@@ -20,7 +20,7 @@ public class DocumentController {
 
 	@Autowired
 	private DocumentService documentService;
-	
+
 	@Autowired
 	private QrcodeService qrcodeService;
 
@@ -42,21 +42,25 @@ public class DocumentController {
 		documentService.downloadCustomerWordResource(type, id, response);
 	}
 
-	@RequestMapping("/billqrcode")
-	public void downloadElectricBillQrCodeResource(@RequestParam("idModul") Long idModul, @RequestParam("idCustomer") final Long idCustomer, 
-			@RequestParam("amount")final Double amount, @RequestParam("unstructuredMessage") final String uMessage, @RequestParam("mode") final String mode,
-			@RequestParam("modul") final String modul,
+	@RequestMapping("/electricbill")
+	public void downloadElectricBillWordResource(@RequestParam("ids") final String ids,
 			final HttpServletResponse response) throws IOException {
+		documentService.downloadElectricBillWordResource(ids, response);
+	}
+
+	@RequestMapping("/billqrcode")
+	public void downloadElectricBillQrCodeResource(@RequestParam("idModul") Long idModul,
+			@RequestParam("idCustomer") final Long idCustomer, @RequestParam("amount") final Double amount,
+			@RequestParam("unstructuredMessage") final String uMessage, @RequestParam("mode") final String mode,
+			@RequestParam("modul") final String modul, final HttpServletResponse response) throws IOException {
 		qrcodeService.generateQrBillCode(idModul, idCustomer, amount, uMessage, mode, modul, response);
 	}
-	
+
 	@RequestMapping("/vertrag/electricbillqrcode")
-	public void downloadElectricBillRentQrCodeResource(@RequestParam("id") final Long id, 
-			@RequestParam("mode") final String mode,
-			final HttpServletResponse response) throws IOException {
+	public void downloadElectricBillRentQrCodeResource(@RequestParam("id") final Long id,
+			@RequestParam("mode") final String mode, final HttpServletResponse response) throws IOException {
 		qrcodeService.generateElectricRentDepositQrBillCode(id, mode, response);
 	}
-	
 
 	@RequestMapping("/billinglist")
 	public void downloadCustomerSalesListWordResource(@RequestParam("jahr") final String jahr,
