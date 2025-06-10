@@ -10,6 +10,8 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -23,366 +25,521 @@ import com.google.common.io.Files;
 
 import jakarta.servlet.http.HttpServletResponse;
 
-
 @Service
 public class DocumentServiceImpl extends CalcHelper implements DocumentService {
 
-    private final Log logger = LogFactory.getLog(getClass());
+	private final Log logger = LogFactory.getLog(getClass());
 
-    private void validateAndWriteResponse(File file, HttpServletResponse response) throws IOException {
-        if (file.exists() && file.isFile()) {
-            response.setStatus(HttpStatus.OK.value());
-            try (OutputStream responseStream = response.getOutputStream()) {
-                Files.copy(file, responseStream);
-                responseStream.flush();
-            }
-        } else {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Generated file not found or invalid.");
-        }
-    }
+	private void validateAndWriteResponse(File file, HttpServletResponse response) throws IOException {
+		if (file.exists() && file.isFile()) {
+			response.setStatus(HttpStatus.OK.value());
+			try (OutputStream responseStream = response.getOutputStream()) {
+				Files.copy(file, responseStream);
+				responseStream.flush();
+			}
+		} else {
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Generated file not found or invalid.");
+		}
+	}
 
-    @Override
-    public void downloadContractWordResource(final Long id, final HttpServletResponse response) throws IOException {
-        response.setContentType("application/msword");
-        response.setHeader(HttpHeaders.CONTENT_TYPE, "application/msword; charset=UTF-8");
+	@Override
+	public void downloadContractWordResource(final Long id, final HttpServletResponse response) throws IOException {
+		response.setContentType("application/msword");
+		response.setHeader(HttpHeaders.CONTENT_TYPE, "application/msword; charset=UTF-8");
 
-        File file = new File(getOutputPath() + "outOffer.docx");
+		File file = new File(getOutputPath() + "outOffer.docx");
 
-        try (InputStream template = loadClassPathResource(getTemplatesPath() + "Offerte.docx");
-             OutputStream outputStream = new FileOutputStream(file)) {
+		try (InputStream template = loadClassPathResource(getTemplatesPath() + "Offerte.docx");
+				OutputStream outputStream = new FileOutputStream(file)) {
 
-            Contract contract = getContract(id);
-            if (contract == null) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Contract not found for ID: " + id);
-            }
+			Contract contract = getContract(id);
+			if (contract == null) {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Contract not found for ID: " + id);
+			}
 
-            while (!new GenerateContract().generateDocOffering(contract, template, outputStream)) {
-                logger.info("Waiting for document generation...");
-            }
-            logger.info("Document generation complete.");
+			while (!new GenerateContract().generateDocOffering(contract, template, outputStream)) {
+				logger.info("Waiting for document generation...");
+			}
+			logger.info("Document generation complete.");
 
-            validateAndWriteResponse(file, response);
-         
-	        logger.info("Memory usage after generating Offerte list: "
-	                + (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + " KB");
+			validateAndWriteResponse(file, response);
 
-        } catch (IOException ex) {
-            logger.error("I/O error during contract document generation: ", ex);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error reading or writing files.");
-        } catch (ResponseStatusException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            logger.error("Unexpected error during contract document generation: ", ex);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
-        }
-    }
+			logger.info("Memory usage after generating Offerte list: "
+					+ (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + " KB");
 
-    @Override
-    public void downloadCustomerLetterWordResource(final String type, final Long id, final HttpServletResponse response) throws IOException {
-        response.setContentType("application/msword");
-        response.setHeader(HttpHeaders.CONTENT_TYPE, "application/msword; charset=UTF-8");
+		} catch (IOException ex) {
+			logger.error("I/O error during contract document generation: ", ex);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error reading or writing files.");
+		} catch (ResponseStatusException ex) {
+			throw ex;
+		} catch (Exception ex) {
+			logger.error("Unexpected error during contract document generation: ", ex);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
+		}
+	}
 
-        File file = new File(getOutputPath() + "outMahnung.docx");
+	@Override
+	public void downloadCustomerLetterWordResource(final String type, final Long id, final HttpServletResponse response)
+			throws IOException {
+		response.setContentType("application/msword");
+		response.setHeader(HttpHeaders.CONTENT_TYPE, "application/msword; charset=UTF-8");
 
-        try (InputStream template = loadClassPathResource(getTemplatesPath() + "Mahnung.docx");
-             OutputStream outputStream = new FileOutputStream(file)) {
+		File file = new File(getOutputPath() + "outMahnung.docx");
 
-            Customer customer = "mahnung".equalsIgnoreCase(type) ? getCustomer(id) : null;
+		try (InputStream template = loadClassPathResource(getTemplatesPath() + "Mahnung.docx");
+				OutputStream outputStream = new FileOutputStream(file)) {
 
-            if (customer == null) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Customer not found for ID: " + id);
-            }
+			Customer customer = "mahnung".equalsIgnoreCase(type) ? getCustomer(id) : null;
 
-            while (!new GenerateLetters().generateLetterMahung(customer, template, outputStream)) {
-                logger.info("Waiting for document generation...");
-            }
-            logger.info("Document generation complete.");
+			if (customer == null) {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Customer not found for ID: " + id);
+			}
 
-            validateAndWriteResponse(file, response);
-         
-	        logger.info("Memory usage after generating Mahnung list: "
-	                + (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + " KB");
+			while (!new GenerateLetters().generateLetterMahung(customer, template, outputStream)) {
+				logger.info("Waiting for document generation...");
+			}
+			logger.info("Document generation complete.");
 
-        } catch (IOException ex) {
-            logger.error("I/O error during customer letter document generation: ", ex);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error reading or writing files.");
-        } catch (ResponseStatusException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            logger.error("Unexpected error during customer letter document generation: ", ex);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
-        }
-    }
+			validateAndWriteResponse(file, response);
 
-    @Override
-    public void downloadCustomerWordResource(final String type, final String id, final HttpServletResponse response) throws IOException {
-        response.setContentType("application/msword");
-        response.setHeader(HttpHeaders.CONTENT_TYPE, "application/msword; charset=UTF-8");
+			logger.info("Memory usage after generating Mahnung list: "
+					+ (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + " KB");
 
-        File file = new File(getOutputPath() + "outKundenliste.docx");
+		} catch (IOException ex) {
+			logger.error("I/O error during customer letter document generation: ", ex);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error reading or writing files.");
+		} catch (ResponseStatusException ex) {
+			throw ex;
+		} catch (Exception ex) {
+			logger.error("Unexpected error during customer letter document generation: ", ex);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
+		}
+	}
 
-        try (InputStream template = loadClassPathResource(getTemplatesPath() + "Kundenliste.docx");
-             OutputStream outputStream = new FileOutputStream(file)) {
+	@Override
+	public void downloadCustomerWordResource(final String type, final String id, final HttpServletResponse response)
+			throws IOException {
+		response.setContentType("application/msword");
+		response.setHeader(HttpHeaders.CONTENT_TYPE, "application/msword; charset=UTF-8");
 
-            List<Customer> customers = "liste".equalsIgnoreCase(type) ? getCustomerByStatusText(id) : null;
+		File file = new File(getOutputPath() + "outKundenliste.docx");
 
-            if (customers == null || customers.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No customers found for the given status.");
-            }
+		try (InputStream template = loadClassPathResource(getTemplatesPath() + "Kundenliste.docx");
+				OutputStream outputStream = new FileOutputStream(file)) {
 
-            while (!new GenerateLists().generateDocList(customers, template, outputStream)) {
-                logger.info("Waiting for document generation...");
-            }
-            logger.info("Document generation complete.");
+			List<Customer> customers = "liste".equalsIgnoreCase(type) ? getCustomerByStatusText(id) : null;
 
-            validateAndWriteResponse(file, response);
-         
-	        logger.info("Memory usage after generating Kundenliste list: "
-	                + (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + " KB");
+			if (customers == null || customers.isEmpty()) {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No customers found for the given status.");
+			}
 
-        } catch (IOException ex) {
-            logger.error("I/O error during customer list document generation: ", ex);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error reading or writing files.");
-        } catch (ResponseStatusException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            logger.error("Unexpected error during customer list document generation: ", ex);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
-        }
-    }
-    @Override
-	public void downloaElectricOverwievBillingWordResource(final String jahr, final String status, final HttpServletResponse response) throws IOException {
-	    response.setContentType("application/msword");
-	    response.setHeader(HttpHeaders.CONTENT_TYPE, "application/msword; charset=UTF-8");
+			while (!new GenerateLists().generateDocList(customers, template, outputStream)) {
+				logger.info("Waiting for document generation...");
+			}
+			logger.info("Document generation complete.");
 
-	    File file = new File(getOutputPath() + "outEbillList.docx");
+			validateAndWriteResponse(file, response);
 
-	    try (InputStream template = loadClassPathResource(getTemplatesPath() + "eBillList.docx");
+			logger.info("Memory usage after generating Kundenliste list: "
+					+ (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + " KB");
+
+		} catch (IOException ex) {
+			logger.error("I/O error during customer list document generation: ", ex);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error reading or writing files.");
+		} catch (ResponseStatusException ex) {
+			throw ex;
+		} catch (Exception ex) {
+			logger.error("Unexpected error during customer list document generation: ", ex);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
+		}
+	}
+
+	@Override
+	public void downloaElectricOverwievBillingWordResource(final String jahr, final String status,
+			final HttpServletResponse response) throws IOException {
+		response.setContentType("application/msword");
+		response.setHeader(HttpHeaders.CONTENT_TYPE, "application/msword; charset=UTF-8");
+
+		File file = new File(getOutputPath() + "outEbillList.docx");
+
+		try (InputStream template = loadClassPathResource(getTemplatesPath() + "eBillList.docx");
+				OutputStream outputStream = new FileOutputStream(file)) {
+
+			// Datenabruf und Validierung
+			List<ElectricPeriod> list = getElectricOverwievBilling(jahr, status);
+			if (list == null || list.isEmpty()) {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+						"No billing data found for the specified year and status.");
+			}
+
+			// Dokumentgenerierung
+			while (!new GenerateEBillOverviewList().generateEbillList(list, template, outputStream)) {
+				logger.info("Waiting for document generation...");
+			}
+			logger.info("Document generation complete.");
+
+			validateAndWriteResponse(file, response);
+
+			logger.info("Memory usage after generating E-Bill list: "
+					+ (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + " KB");
+
+		} catch (IOException ex) {
+			logger.error("I/O error during E-Bill overview document generation: ", ex);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error reading or writing files.");
+		} catch (ResponseStatusException ex) {
+			// Weiterleiten der ResponseStatusException
+			throw ex;
+		} catch (Exception ex) {
+			logger.error("Unexpected error during E-Bill overview document generation: ", ex);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
+		}
+	}
+	
+	@Override
+	public void downloadElectricOverviewBillingExcelResource(final String jahr, final String status,
+	                                                         final HttpServletResponse response) throws IOException {
+	    response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+	    response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"outEbillList.xlsx\"");
+
+	    File file = new File(getOutputPath() + "outEbillList.xlsx");
+
+	    try (Workbook workbook = new XSSFWorkbook();
 	         OutputStream outputStream = new FileOutputStream(file)) {
 
-	        // Datenabruf und Validierung
+	        // Daten abrufen
 	        List<ElectricPeriod> list = getElectricOverwievBilling(jahr, status);
 	        if (list == null || list.isEmpty()) {
-	            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No billing data found for the specified year and status.");
+	            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+	                    "No billing data found for the specified year and status.");
 	        }
 
-	        // Dokumentgenerierung
-	        while (!new GenerateEBillOverviewList().generateEbillList(list, template, outputStream)) {
-	            logger.info("Waiting for document generation...");
-	        }
-	        logger.info("Document generation complete.");
-	        
+	        // Blatt erzeugen
+	        createSheetWithElectricPeriods(workbook, "E-Bill Übersicht", list);
+
+	        workbook.write(outputStream);
+	        logger.info("Excel-Dokument erfolgreich erstellt.");
+
+	        // Antwort mit Datei zurückgeben
 	        validateAndWriteResponse(file, response);
-	     
-	        logger.info("Memory usage after generating E-Bill list: "
+
+	        logger.info("Memory usage after generating E-Bill Excel list: "
 	                + (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + " KB");
-	        
+
 	    } catch (IOException ex) {
-	        logger.error("I/O error during E-Bill overview document generation: ", ex);
-	        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error reading or writing files.");
+	        logger.error("I/O error during E-Bill Excel generation: ", ex);
+	        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error writing Excel file.");
 	    } catch (ResponseStatusException ex) {
-	        // Weiterleiten der ResponseStatusException
 	        throw ex;
 	    } catch (Exception ex) {
-	        logger.error("Unexpected error during E-Bill overview document generation: ", ex);
+	        logger.error("Unexpected error during E-Bill Excel generation: ", ex);
 	        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
 	    }
 	}
 
-    @Override
-    public void downloadElectricBillWordResource(final String ids, final HttpServletResponse response) throws IOException {
-        response.setContentType("application/msword");
-        response.setHeader(HttpHeaders.CONTENT_TYPE, "application/msword; charset=UTF-8");
 
-        File file = new File(getOutputPath() + "outeBill.docx");
+	@Override
+	public void downloadElectricBillWordResource(final String ids, final HttpServletResponse response)
+			throws IOException {
+		response.setContentType("application/msword");
+		response.setHeader(HttpHeaders.CONTENT_TYPE, "application/msword; charset=UTF-8");
 
-        try (InputStream template = loadClassPathResource(getTemplatesPath() + "eBill.docx");
-             OutputStream outputStream = new FileOutputStream(file)) {
+		File file = new File(getOutputPath() + "outeBill.docx");
 
-            List<ElectricPeriod> periods = getElectricPeriods(ids);
-            Customer customer = findAddress(periods);
+		try (InputStream template = loadClassPathResource(getTemplatesPath() + "eBill.docx");
+				OutputStream outputStream = new FileOutputStream(file)) {
 
-            if (periods == null || periods.isEmpty() || customer == null) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid customer or periods.");
-            }
+			List<ElectricPeriod> periods = getElectricPeriods(ids);
+			Customer customer = findAddress(periods);
 
-            GenerateEBill ebill = new GenerateEBill();
-            while (!ebill.generateDocEBill(customer, periods, template, outputStream)) {
-                logger.info("Waiting for document generation...");
-            }
-            logger.info("Document generation complete.");
+			if (periods == null || periods.isEmpty() || customer == null) {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid customer or periods.");
+			}
 
-            ElectricPeriod ep = ebill.getElectricPeriod();
-            updateElectricPeriodPrice(ep.getId(), ep);
+			GenerateEBill ebill = new GenerateEBill();
+			while (!ebill.generateDocEBill(customer, periods, template, outputStream)) {
+				logger.info("Waiting for document generation...");
+			}
+			logger.info("Document generation complete.");
 
-            validateAndWriteResponse(file, response);
-         
-	        logger.info("Memory usage after generating Bill list: "
+			ElectricPeriod ep = ebill.getElectricPeriod();
+			updateElectricPeriodPrice(ep.getId(), ep);
+
+			validateAndWriteResponse(file, response);
+
+			logger.info("Memory usage after generating Bill list: "
+					+ (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + " KB");
+
+		} catch (IOException ex) {
+			logger.error("I/O error during electric bill document generation: ", ex);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error reading or writing files.");
+		} catch (ResponseStatusException ex) {
+			throw ex;
+		} catch (Exception ex) {
+			logger.error("Unexpected error during electric bill document generation: ", ex);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
+		}
+	}
+
+	@Override
+	public void downloadCustomerSalesListWordResource(final String jahr, final HttpServletResponse response)
+			throws IOException {
+		response.setContentType("application/msword");
+		response.setHeader(HttpHeaders.CONTENT_TYPE, "application/msword; charset=UTF-8");
+
+		File file = new File(getOutputPath() + "outBillingList.docx");
+
+		try (InputStream template = loadClassPathResource(getTemplatesPath() + "billingList.docx");
+				OutputStream outputStream = new FileOutputStream(file)) {
+
+			List<AdditionalCosts> additionalCostsList = getAllAdditionalCosts(jahr);
+
+			if (additionalCostsList == null || additionalCostsList.isEmpty()) {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No additional costs found for the year.");
+			}
+
+			while (!new GenerateBillingList().generateCustomerSalesLetter(additionalCostsList, template,
+					outputStream)) {
+				logger.info("Waiting for document generation...");
+			}
+			logger.info("Document generation complete.");
+
+			validateAndWriteResponse(file, response);
+
+			logger.info("Memory usage after generating BillingList list: "
+					+ (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + " KB");
+
+		} catch (IOException ex) {
+			logger.error("I/O error during customer sales list generation: ", ex);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error reading or writing files.");
+		} catch (ResponseStatusException ex) {
+			throw ex;
+		} catch (Exception ex) {
+			logger.error("Unexpected error during customer sales list generation: ", ex);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
+		}
+	}
+	
+	@Override
+	public void downloadCustomerSalesListExcelResource(final String jahr, final HttpServletResponse response) throws IOException {
+	    response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+	    response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=BillingList.xlsx");
+
+	    File file = new File(getOutputPath() + "outBillingList.xlsx");
+
+	    List<AdditionalCosts> additionalCostsList = getAllAdditionalCosts(jahr);
+	    if (additionalCostsList == null || additionalCostsList.isEmpty()) {
+	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No additional costs found for the year.");
+	    }
+
+	    try (Workbook workbook = new XSSFWorkbook(); OutputStream outputStream = new FileOutputStream(file)) {
+
+	        createSheetWithAdditionalCosts(workbook, "Billing List", additionalCostsList);
+
+	        workbook.write(outputStream);
+	        logger.info("Excel document generation complete.");
+
+	        validateAndWriteResponse(file, response);
+
+	        logger.info("Memory usage after generating BillingList Excel: "
 	                + (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + " KB");
 
-        } catch (IOException ex) {
-            logger.error("I/O error during electric bill document generation: ", ex);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error reading or writing files.");
-        } catch (ResponseStatusException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            logger.error("Unexpected error during electric bill document generation: ", ex);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
-        }
-    }
-    
-   
+	    } catch (IOException ex) {
+	        logger.error("I/O error during customer sales list Excel generation: ", ex);
+	        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error reading or writing files.");
+	    } catch (Exception ex) {
+	        logger.error("Unexpected error during customer sales list Excel generation: ", ex);
+	        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
+	    }
+	}
 
 
+	@Override
+	public void downloadCustomerBillWordResource(final String jahr, HttpServletResponse response) throws IOException {
+		response.setContentType("application/msword");
+		response.setHeader(HttpHeaders.CONTENT_TYPE, "application/msword; charset=UTF-8");
 
-    @Override
-    public void downloadCustomerSalesListWordResource(final String jahr, final HttpServletResponse response) throws IOException {
-        response.setContentType("application/msword");
-        response.setHeader(HttpHeaders.CONTENT_TYPE, "application/msword; charset=UTF-8");
+		File file = new File(getOutputPath() + "outMZahlungen.docx");
 
-        File file = new File(getOutputPath() + "outBillingList.docx");
+		try (InputStream template = loadClassPathResource(getTemplatesPath() + "MZahlungen.docx");
+				OutputStream outputStream = new FileOutputStream(file)) {
 
-        try (InputStream template = loadClassPathResource(getTemplatesPath() + "billingList.docx");
-             OutputStream outputStream = new FileOutputStream(file)) {
+			List<Payment> listPayment = getPaymenByTenant(jahr);
+			List<PaymentDatePrice> listPaymentDatePrice = getPaymenDatePricetByTenant(jahr);
 
-            List<AdditionalCosts> additionalCostsList = getAllAdditionalCosts(jahr);
+			if (listPaymentDatePrice == null || listPaymentDatePrice.isEmpty()) {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No payment data found for the year.");
+			}
 
-            if (additionalCostsList == null || additionalCostsList.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No additional costs found for the year.");
-            }
+			while (!new GenerateTenantList().generateDocTenantList(listPaymentDatePrice, listPayment, template,
+					outputStream)) {
+				logger.info("Waiting for document generation...");
+			}
+			logger.info("Document generation complete.");
 
-            while (!new GenerateBillingList().generateCustomerSalesLetter(additionalCostsList, template, outputStream)) {
-                logger.info("Waiting for document generation...");
-            }
-            logger.info("Document generation complete.");
+			validateAndWriteResponse(file, response);
 
-            validateAndWriteResponse(file, response);
-         
-	        logger.info("Memory usage after generating BillingList list: "
-	                + (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + " KB");
+			logger.info("Memory usage after generating MZahlungen list: "
+					+ (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + " KB");
 
-        } catch (IOException ex) {
-            logger.error("I/O error during customer sales list generation: ", ex);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error reading or writing files.");
-        } catch (ResponseStatusException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            logger.error("Unexpected error during customer sales list generation: ", ex);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
-        }
-    }
+		} catch (IOException ex) {
+			logger.error("I/O error during customer bill document generation: ", ex);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error reading or writing files.");
+		} catch (ResponseStatusException ex) {
+			throw ex;
+		} catch (Exception ex) {
+			logger.error("Unexpected error during customer bill document generation: ", ex);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
+		}
+	}
 
-    @Override
-    public void downloadCustomerBillWordResource(final String jahr, HttpServletResponse response) throws IOException {
-        response.setContentType("application/msword");
-        response.setHeader(HttpHeaders.CONTENT_TYPE, "application/msword; charset=UTF-8");
+	@Override
+	public void downloadCustomerBillExcelResource(final String jahr, HttpServletResponse response) throws IOException {
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=CustomerBill_" + jahr + ".xlsx");
 
-        File file = new File(getOutputPath() + "outMZahlungen.docx");
+		File file = new File(getOutputPath() + "CustomerBill_" + jahr + ".xlsx");
 
-        try (InputStream template = loadClassPathResource(getTemplatesPath() + "MZahlungen.docx");
-             OutputStream outputStream = new FileOutputStream(file)) {
+		try (Workbook workbook = new XSSFWorkbook(); OutputStream fileOut = new FileOutputStream(file)) {
 
-            List<Payment> listPayment = getPaymenByTenant(jahr);
-            List<PaymentDatePrice> listPaymentDatePrice = getPaymenDatePricetByTenant(jahr);
+			List<Payment> listPayment = getPaymenByTenant(jahr);
+			List<PaymentDatePrice> listPaymentDatePrice = getPaymenDatePricetByTenant(jahr);
 
-            if (listPaymentDatePrice == null || listPaymentDatePrice.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No payment data found for the year.");
-            }
+			if (listPaymentDatePrice == null || listPaymentDatePrice.isEmpty()) {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No payment data found for the year.");
+			}
 
-            while (!new GenerateTenantList().generateDocTenantList(listPaymentDatePrice, listPayment, template, outputStream)) {
-                logger.info("Waiting for document generation...");
-            }
-            logger.info("Document generation complete.");
+			createSheetWithCombinedPaymentData(workbook, "Zahlungseingäge Mieter", listPayment, listPaymentDatePrice);
 
-            validateAndWriteResponse(file, response);
-         
-	        logger.info("Memory usage after generating MZahlungen list: "
-	                + (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + " KB");
+			workbook.write(fileOut);
+			logger.info("Excel-Dokument erfolgreich erstellt.");
 
-        } catch (IOException ex) {
-            logger.error("I/O error during customer bill document generation: ", ex);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error reading or writing files.");
-        } catch (ResponseStatusException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            logger.error("Unexpected error during customer bill document generation: ", ex);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
-        }
-    }
+			validateAndWriteResponse(file, response);
 
-    @Override
-    public void downloadBillingLetterWordResource(final Long id, final HttpServletResponse response) throws IOException {
-        response.setContentType("application/msword");
-        response.setHeader(HttpHeaders.CONTENT_TYPE, "application/msword; charset=UTF-8");
+			logger.info("Memory usage after generating Excel: "
+					+ (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + " KB");
 
-        File file = new File(getOutputPath() + "outBillingLetter.docx");
+		} catch (IOException ex) {
+			logger.error("I/O error during customer bill Excel generation: ", ex);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error writing Excel file.");
+		} catch (ResponseStatusException ex) {
+			throw ex;
+		} catch (Exception ex) {
+			logger.error("Unexpected error during customer bill Excel generation: ", ex);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
+		}
+	}
 
-        try (InputStream template = loadClassPathResource(getTemplatesPath() + "billingLetter.docx");
-             OutputStream outputStream = new FileOutputStream(file)) {
+	@Override
+	public void downloadBillingLetterWordResource(final Long id, final HttpServletResponse response)
+			throws IOException {
+		response.setContentType("application/msword");
+		response.setHeader(HttpHeaders.CONTENT_TYPE, "application/msword; charset=UTF-8");
 
-            AdditionalCosts item = getAdditionalCosts(id);
+		File file = new File(getOutputPath() + "outBillingLetter.docx");
 
-            if (item == null) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Additional costs not found for the specified ID.");
-            }
+		try (InputStream template = loadClassPathResource(getTemplatesPath() + "billingLetter.docx");
+				OutputStream outputStream = new FileOutputStream(file)) {
 
-            while (!new GenerateBillingLetter().generateDocBillingLetter(item, template, outputStream)) {
-                logger.info("Waiting for document generation...");
-            }
-            logger.info("Document generation complete.");
+			AdditionalCosts item = getAdditionalCosts(id);
 
-            validateAndWriteResponse(file, response);
-         
-	        logger.info("Memory usage after generating BillingLetter list: "
-	                + (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + " KB");
+			if (item == null) {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+						"Additional costs not found for the specified ID.");
+			}
 
-        } catch (IOException ex) {
-            logger.error("I/O error during billing letter document generation: ", ex);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error reading or writing files.");
-        } catch (ResponseStatusException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            logger.error("Unexpected error during billing letter document generation: ", ex);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
-        }
-    }
+			while (!new GenerateBillingLetter().generateDocBillingLetter(item, template, outputStream)) {
+				logger.info("Waiting for document generation...");
+			}
+			logger.info("Document generation complete.");
 
-    @Override
-    public void downloadMwstWordResource(final String year, final Date from, final Date to, final HttpServletResponse response) throws IOException {
-        response.setContentType("application/msword");
-        response.setHeader(HttpHeaders.CONTENT_TYPE, "application/msword; charset=UTF-8");
+			validateAndWriteResponse(file, response);
 
-        File file = new File(getOutputPath() + "outMwstLetter.docx");
+			logger.info("Memory usage after generating BillingLetter list: "
+					+ (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + " KB");
 
-        try (InputStream template = loadClassPathResource(getTemplatesPath() + "mwstLetter.docx");
-             OutputStream outputStream = new FileOutputStream(file)) {
+		} catch (IOException ex) {
+			logger.error("I/O error during billing letter document generation: ", ex);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error reading or writing files.");
+		} catch (ResponseStatusException ex) {
+			throw ex;
+		} catch (Exception ex) {
+			logger.error("Unexpected error during billing letter document generation: ", ex);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
+		}
+	}
 
-            List<MwstDTO> itemEbox = getMwstBoxen(from, to);
-            List<MwstDTO> itemStrom = getMwstStrom(from, to);
-            List<MwstDTO> itemRechnungen = getMwstRechnungen(from, to);
+	@Override
+	public void downloadMwstWordResource(final String year, final Date from, final Date to,
+			final HttpServletResponse response) throws IOException {
+		response.setContentType("application/msword");
+		response.setHeader(HttpHeaders.CONTENT_TYPE, "application/msword; charset=UTF-8");
 
-            if (itemEbox == null || itemEbox.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No data found for the specified date range.");
-            }
+		File file = new File(getOutputPath() + "outMwstLetter.docx");
 
-            while (!new GenerateMwStLetter().generateDocMwstLetter(itemEbox, itemStrom, itemRechnungen, from, to, template, outputStream)) {
-                logger.info("Waiting for document generation...");
-            }
-            logger.info("Document generation complete.");
+		try (InputStream template = loadClassPathResource(getTemplatesPath() + "mwstLetter.docx");
+				OutputStream outputStream = new FileOutputStream(file)) {
 
-            validateAndWriteResponse(file, response);
-         
-	        logger.info("Memory usage after generating MwstLetter list: "
-	                + (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + " KB");
+			List<MwstDTO> itemEbox = getMwstBoxen(from, to);
+			List<MwstDTO> itemStrom = getMwstStrom(from, to);
+			List<MwstDTO> itemRechnungen = getMwstRechnungen(from, to);
 
-        } catch (IOException ex) {
-            logger.error("I/O error during MwSt document generation: ", ex);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error reading or writing files.");
-        } catch (ResponseStatusException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            logger.error("Unexpected error during MwSt document generation: ", ex);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
-        }
-    }
+			if (itemEbox == null || itemEbox.isEmpty()) {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+						"No data found for the specified date range.");
+			}
+
+			while (!new GenerateMwStLetter().generateDocMwstLetter(itemEbox, itemStrom, itemRechnungen, from, to,
+					template, outputStream)) {
+				logger.info("Waiting for document generation...");
+			}
+			logger.info("Document generation complete.");
+
+			validateAndWriteResponse(file, response);
+
+			logger.info("Memory usage after generating MwstLetter list: "
+					+ (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + " KB");
+
+		} catch (IOException ex) {
+			logger.error("I/O error during MwSt document generation: ", ex);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error reading or writing files.");
+		} catch (ResponseStatusException ex) {
+			throw ex;
+		} catch (Exception ex) {
+			logger.error("Unexpected error during MwSt document generation: ", ex);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
+		}
+	}
+
+	@Override
+	public void downloadMwstExcelResource(final String year, final Date from, final Date to,
+			final HttpServletResponse response) throws IOException {
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"MwstDaten.xlsx\"");
+
+		List<MwstDTO> itemEbox = getMwstBoxen(from, to);
+		List<MwstDTO> itemStrom = getMwstStrom(from, to);
+		List<MwstDTO> itemRechnungen = getMwstRechnungen(from, to);
+
+		if (itemEbox == null || itemEbox.isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No data found for the specified date range.");
+		}
+
+		try (Workbook workbook = new XSSFWorkbook(); OutputStream outputStream = response.getOutputStream()) {
+
+			createSheetWithDataForMwStCalculation(workbook, "eBox", itemEbox);
+			createSheetWithDataForMwStCalculation(workbook, "Strom", itemStrom);
+			createSheetWithDataForMwStCalculation(workbook, "Rechnungen", itemRechnungen);
+
+			workbook.write(outputStream);
+			logger.info("Excel generation complete.");
+
+			logger.info("Memory usage after generating Excel: "
+					+ (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + " KB");
+
+		} catch (Exception ex) {
+			logger.error("Unexpected error during Excel generation: ", ex);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
+		}
+	}
+
 }

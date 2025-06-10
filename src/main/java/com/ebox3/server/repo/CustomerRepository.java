@@ -13,17 +13,17 @@ import org.springframework.stereotype.Repository;
 
 import com.ebox3.server.model.Customer;
 
-
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
-	
+
 	List<Customer> findByAge(int age);
 
 	@Query(value = "SELECT c.id AS value,	CONCAT(c.name, ' ', "
 			+ "c.vorname, ' ', c.strasse, ' ', c.plz, ' ', c.ort) AS viewValue" + "	FROM customer c"
-			+ "	WHERE c.status_text NOT IN ('Intressent', 'Kündigung')" + "ORDER BY c.name, c.vorname", nativeQuery = true)
+			+ "	WHERE c.status_text NOT IN ('Intressent', 'Kündigung')"
+			+ "ORDER BY c.name, c.vorname", nativeQuery = true)
 	List<Map<Long, Object>> customerSelection();
-	
+
 	@Query(value = "SELECT c.id AS value,	CONCAT(c.name, ' ', "
 			+ "c.vorname, ' ', c.strasse, ' ', c.plz, ' ', c.ort) AS viewValue" + "	FROM customer c"
 			+ "	WHERE c.status_text NOT IN ('Intressent')" + "ORDER BY c.name, c.vorname", nativeQuery = true)
@@ -31,10 +31,10 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
 	@Query("SELECT c FROM Customer c WHERE c.statusText LIKE :statusText")
 	List<Customer> findByStatusText(@Param("statusText") String statusText);
-	
+
 	@Query("SELECT c FROM Customer c "
-		 + "WHERE c.statusText "
-		 + "LIKE :statusText AND c.createdAt BETWEEN :startDate AND :endDate")
+			+ "WHERE c.statusText "
+			+ "LIKE :statusText AND c.createdAt BETWEEN :startDate AND :endDate")
 	List<Customer> findByStatusTexAndStartDate(@Param("statusText") String statusText,
 			@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
@@ -59,54 +59,61 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
 	@Query(value = "SELECT * FROM customer c " + "WHERE c.status_text IN ('Kündigung')", nativeQuery = true)
 	List<Customer> findRetiredCustomers();
-	
+
 	@Query(value = "SELECT * FROM customer c "
 			+ "WHERE c.status_text NOT IN ('Kündigung', 'Intressent')", nativeQuery = true)
 	List<Customer> findCustomers();
-	
+
 	@Query(value = "SELECT * FROM customer c "
 			+ "WHERE c.status_text NOT IN ('Kündigung', 'Intressent')", nativeQuery = true)
 	Page<Customer> findCustomersNotKündigungAndNotIntressent(Pageable pageable);
-	
+
 	@Query(value = "SELECT * FROM customer c "
 			+ "WHERE c.status_text IN ('Kündigung', 'Intressent')", nativeQuery = true)
 	Page<Customer> findCustomerstKündigungAndIntressent(Pageable pageable);
-	
+
 	@Query(value = "SELECT * FROM customer c " + "WHERE c.status_text IN ('Kündigung')", nativeQuery = true)
 	Page<Customer> findRetiredCustomersPageable(Pageable pageable);
-	
+
 	@Query(value = "SELECT * FROM customer c "
 			+ "WHERE c.status_text NOT IN ('Kündigung', 'Intressent')", nativeQuery = true)
 	Page<Customer> findCustomersPageable(Pageable pageable);
-	
-	
+
 	@Query(value = "SELECT * FROM customer c "
-			+ "WHERE  MATCH(c.name, c.vorname, c.plz, c.strasse, c.ort, c.status_text, c.tel1) "
-					+ "AGAINST(?1 IN BOOLEAN MODE)", nativeQuery = true)
-	List<Customer> findCustomerFullSearch(String search);
-	
-//  Dient als Demozweck, damit auch in spätern Jahren noch nachvollzogen werden kann wie man es auch machen könnnte.
-//  Ich habe mich entschieden dies über dein Full Text Suche zu machen, dann bruacht mann die untenstehende Möglichkeit hier nicht mehr.
-	
-//	Page<Customer> findByNameContainingIgnoreCase(String name, Pageable pageable);
-//	Page<Customer> findByVornameContainingIgnoreCase(String vorname,  Pageable pageable);
-//	Page<Customer> findByStrasseContainingIgnoreCase(String strasse, Pageable pageable);
-//	Page<Customer> findByOrtContainingIgnoreCase(String ort, Pageable pageable);
-//	Page<Customer> findByPlzContainingIgnoreCase(String plz, Pageable pageable);
-//	Page<Customer> findByStatusTextContainingIgnoreCase(String statusText, Pageable pagable);
-//	
-//	List<Customer> findByNameContainingIgnoreCaseOrVornameContainingIgnoreCaseOrStrasseContainingIgnoreCaseOrOrtContainingIgnoreCaseOrPlzContainingIgnoreCaseOrStatusTextContainingIgnoreCase(
-//			String name, 
-//			String vorname,
-//			String strasse, 
-//			String ort, 
-//			String plz,
-//			String statusText);
-//		
-//	List<Customer> findByNameContainingIgnoreCaseOrVornameContainingIgnoreCaseOrOrtContainingIgnoreCaseOrStatusTextContainingIgnoreCase(
-//			String name, 
-//			String vorname,
-//			String ort,
-//			String statusText);
-	
+			+ "WHERE MATCH(c.name, c.vorname, c.plz, c.strasse, c.ort, c.status_text, c.tel1) "
+			+ "AGAINST (:search IN BOOLEAN MODE)", nativeQuery = true)
+	List<Customer> findCustomerFullSearch(@Param("search") String search);
+
+	// Dient als Demozweck, damit auch in spätern Jahren noch nachvollzogen werden
+	// kann wie man es auch machen könnnte.
+	// Ich habe mich entschieden dies über dein Full Text Suche zu machen, dann
+	// bruacht mann die untenstehende Möglichkeit hier nicht mehr.
+
+	// Page<Customer> findByNameContainingIgnoreCase(String name, Pageable
+	// pageable);
+	// Page<Customer> findByVornameContainingIgnoreCase(String vorname, Pageable
+	// pageable);
+	// Page<Customer> findByStrasseContainingIgnoreCase(String strasse, Pageable
+	// pageable);
+	// Page<Customer> findByOrtContainingIgnoreCase(String ort, Pageable pageable);
+	// Page<Customer> findByPlzContainingIgnoreCase(String plz, Pageable pageable);
+	// Page<Customer> findByStatusTextContainingIgnoreCase(String statusText,
+	// Pageable pagable);
+	//
+	// List<Customer>
+	// findByNameContainingIgnoreCaseOrVornameContainingIgnoreCaseOrStrasseContainingIgnoreCaseOrOrtContainingIgnoreCaseOrPlzContainingIgnoreCaseOrStatusTextContainingIgnoreCase(
+	// String name,
+	// String vorname,
+	// String strasse,
+	// String ort,
+	// String plz,
+	// String statusText);
+	//
+	// List<Customer>
+	// findByNameContainingIgnoreCaseOrVornameContainingIgnoreCaseOrOrtContainingIgnoreCaseOrStatusTextContainingIgnoreCase(
+	// String name,
+	// String vorname,
+	// String ort,
+	// String statusText);
+
 }

@@ -6,7 +6,6 @@ import java.util.Date;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -67,11 +66,24 @@ public class DocumentController {
 			final HttpServletResponse response) throws IOException {
 		documentService.downloadCustomerSalesListWordResource(jahr, response);
 	}
+	
+	@RequestMapping("/billinglist-excel")
+	public void downloadCustomerSalesListExcelResource(@RequestParam("jahr") final String jahr,
+			final HttpServletResponse response) throws IOException {
+		documentService.downloadCustomerSalesListExcelResource(jahr, response);
+	}
 
-	@GetMapping("/tenant")
+	@RequestMapping("/tenant")
 	private void downloadCustomerBillWordResource(@RequestParam("jahr") final String jahr, HttpServletResponse response)
 			throws IOException {
 		documentService.downloadCustomerBillWordResource(jahr, response);
+	}
+
+	@RequestMapping("/tenant-excel")
+	private void downloadCustomerBillExcelResource(@RequestParam("jahr") final String jahr,
+			HttpServletResponse response)
+			throws IOException {
+		documentService.downloadCustomerBillExcelResource(jahr, response);
 	}
 
 	@RequestMapping("/electricoverviewbilling")
@@ -79,6 +91,13 @@ public class DocumentController {
 			@RequestParam("status") final String status, final HttpServletResponse response) throws IOException {
 		documentService.downloaElectricOverwievBillingWordResource(jahr, status, response);
 	}
+	
+	@RequestMapping("/electricoverviewbilling-excel")
+	public void downloaElectricOverwievBillingExcelResource(@RequestParam("jahr") final String jahr,
+			@RequestParam("status") final String status, final HttpServletResponse response) throws IOException {
+		documentService.downloadElectricOverviewBillingExcelResource(jahr, status, response);
+	}
+
 
 	@RequestMapping("/billingletter")
 	public void downloadBillingLetterWordResource(@RequestParam("id") final Long id, final HttpServletResponse response)
@@ -90,6 +109,13 @@ public class DocumentController {
 	public void downloadMwstWordResource(@RequestParam("year") final String year, @RequestParam("from") final Date from,
 			@RequestParam("to") final Date to, final HttpServletResponse response) throws IOException {
 		documentService.downloadMwstWordResource(year, from, to, response);
+	}
+
+	@RequestMapping("/mwst-excel")
+	public void downloadMwstExcelResource(@RequestParam("year") final String year,
+			@RequestParam("from") final Date from, @RequestParam("to") final Date to,
+			final HttpServletResponse response) throws IOException {
+		documentService.downloadMwstExcelResource(year, from, to, response);
 	}
 
 }
