@@ -211,18 +211,18 @@ public class ContractServiceImpl extends HelpFunctions implements ContractServic
 	                    String.format("Contract not found by id: %d", id)));
 
 	    // Manuelle Aktualisierungen wichtiger Felder
-	    if (contractDTO.isActive()) {
-	        contract.setActive(true);
-	    }
+	    //		if (contractDTO.isActive()) {
+	    //	        contract.setActive(true);
+	    //	    }
 
-	    if (contractDTO.getStatusText() != null) {
-	        contract.setStatusText(contractDTO.getStatusText());
-	    }
+	    //    if (contractDTO.getStatusText() != null) {
+	    //        contract.setStatusText(contractDTO.getStatusText());
+	    //	    }
 
-	    String bemerkungen = contractDTO.getBemerkungen();
-	    if (bemerkungen != null && !bemerkungen.isBlank()) {
-	        contract.setBemerkungen(bemerkungen);
-	    }
+	    //	    String bemerkungen = contractDTO.getBemerkungen();
+	    //	    if (bemerkungen != null && !bemerkungen.isBlank()) {
+	    //	        contract.setBemerkungen(bemerkungen);
+	    //	    }
 
 	    // Lokaler Mapper für restliches Mapping (ohne id, customer etc.)
 	    ModelMapper mapper = new ModelMapper();
@@ -231,8 +231,8 @@ public class ContractServiceImpl extends HelpFunctions implements ContractServic
 	    mapper.createTypeMap(ContractDTO.class, Contract.class)
 	          .addMappings(m -> {
 	              m.skip(Contract::setId);
-	              m.skip(Contract::setActive);
-	              m.skip(Contract::setBemerkungen);
+	            //  m.skip(Contract::setActive);
+	             // m.skip(Contract::setBemerkungen);
 	              m.skip(Contract::setCustomer);
 	              m.skip(Contract::setQrReferenceCodeRent);
 	              m.skip(Contract::setQrReferenceCodeDeposit);

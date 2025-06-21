@@ -1423,7 +1423,8 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
 						setBasisData(item, outPay);
 						outPay.setMonth("Jan.");
-						outPayList.add(outPay);
+						outPay.setPayememtDatePriceId(item.getId());
+						outPayList.add(outPay);	
 					}
 					break;
 				case 1:
@@ -1433,6 +1434,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
 						setBasisData(item, outPay);
 						outPay.setMonth("Feb.");
+						outPay.setPayememtDatePriceId(item.getId());
 						outPayList.add(outPay);
 					}
 					break;
@@ -1443,6 +1445,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
 						setBasisData(item, outPay);
 						outPay.setMonth("Mar.");
+						outPay.setPayememtDatePriceId(item.getId());
 						outPayList.add(outPay);
 					}
 					break;
@@ -1453,6 +1456,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
 						setBasisData(item, outPay);
 						outPay.setMonth("Apr.");
+						outPay.setPayememtDatePriceId(item.getId());
 						outPayList.add(outPay);
 					}
 					break;
@@ -1463,6 +1467,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
 						setBasisData(item, outPay);
 						outPay.setMonth("Mai");
+						outPay.setPayememtDatePriceId(item.getId());
 						outPayList.add(outPay);
 					}
 					break;
@@ -1474,6 +1479,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 						setBasisData(item, outPay);
 						outPay.setPayment(item.getBruttoJunPrice());
 						outPay.setMonth("Jun.");
+						outPay.setPayememtDatePriceId(item.getId());
 						outPayList.add(outPay);
 					}
 					break;
@@ -1484,6 +1490,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
 						setBasisData(item, outPay);
 						outPay.setMonth("Jul.");
+						outPay.setPayememtDatePriceId(item.getId());
 						outPayList.add(outPay);
 					}
 					break;
@@ -1494,6 +1501,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
 						setBasisData(item, outPay);
 						outPay.setMonth("Aug.");
+						outPay.setPayememtDatePriceId(item.getId());
 						outPayList.add(outPay);
 					}
 					break;
@@ -1504,6 +1512,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
 						setBasisData(item, outPay);
 						outPay.setMonth("Sep.");
+						outPay.setPayememtDatePriceId(item.getId());
 						outPayList.add(outPay);
 					}
 					break;
@@ -1514,6 +1523,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
 						setBasisData(item, outPay);
 						outPay.setMonth("Okt.");
+						outPay.setPayememtDatePriceId(item.getId());
 						outPayList.add(outPay);
 					}
 					break;
@@ -1524,6 +1534,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
 						setBasisData(item, outPay);
 						outPay.setMonth("Nov.");
+						outPay.setPayememtDatePriceId(item.getId());
 						outPayList.add(outPay);
 					}
 					break;
@@ -1534,6 +1545,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
 						setBasisData(item, outPay);
 						outPay.setMonth("Dez.");
+						outPay.setPayememtDatePriceId(item.getId());
 						outPayList.add(outPay);
 					}
 					break;

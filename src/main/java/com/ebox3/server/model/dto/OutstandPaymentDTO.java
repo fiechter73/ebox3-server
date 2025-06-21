@@ -9,6 +9,7 @@ public class OutstandPaymentDTO {
   private String month;
   private Double payment;
   private String boxNumbers;
+  private Long payememtDatePriceId;
   
   
   public Long getCustomerId() {
@@ -53,7 +54,12 @@ public class OutstandPaymentDTO {
   public void setBoxNumbers(String boxNumbers) {
     this.boxNumbers = boxNumbers;
   }
-  
+  public Long getPayememtDatePriceId() {
+    return payememtDatePriceId;
+  }
+  public void setPayememtDatePriceId(Long payememtDatePriceId) {
+    this.payememtDatePriceId = payememtDatePriceId;
+  }
   
 
 }

@@ -34,8 +34,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-
-import com.ebox3.server.doc.LCustomer;
 import com.ebox3.server.doc.Util;
 import com.ebox3.server.exception.ResourceNotFoundException;
 import com.ebox3.server.model.AdditionalCosts;
