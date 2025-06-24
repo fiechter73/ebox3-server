@@ -2,7 +2,6 @@ package com.ebox3.server.model.dto;
 
 import java.util.List;
 
-
 public class CustomerDTO {
 
 	private Long id;
@@ -20,6 +19,7 @@ public class CustomerDTO {
 	private String firmenAnschrift;
 	private boolean active;
 	private String statusText;
+	private String iban;
 	private String bemerkungen;
 	private Long countedContract;
 	private Double sumBoxPrice;
@@ -83,6 +83,10 @@ public class CustomerDTO {
 
 	public String getStatusText() {
 		return statusText;
+	}
+
+	public String getIban() {
+		return iban;
 	}
 
 	public String getBemerkungen() {
@@ -157,6 +161,10 @@ public class CustomerDTO {
 		this.statusText = statusText;
 	}
 
+	public void setIban(String iban) {
+		this.iban = iban;
+	}
+
 	public void setBemerkungen(String bemerkungen) {
 		this.bemerkungen = bemerkungen;
 	}
@@ -194,9 +202,9 @@ public class CustomerDTO {
 		return "CustomerDTO [id=" + id + ", anrede=" + anrede + ", name=" + name + ", vorname=" + vorname + ", strasse="
 				+ strasse + ", ort=" + ort + ", plz=" + plz + ", tel1=" + tel1 + ", tel2=" + tel2 + ", email=" + email
 				+ ", firmenName=" + firmenName + ", useCompanyAddress=" + useCompanyAddress + ", firmenAnschrift="
-				+ firmenAnschrift + ", active=" + active + ", statusText=" + statusText + ", bemerkungen=" + bemerkungen
-				+ ", countedContract=" + countedContract + ", sumBoxPrice=" + sumBoxPrice + ", countedBox=" + countedBox
-				+ ", contracts=" + contracts + "]";
+				+ firmenAnschrift + ", active=" + active + ", statusText=" + statusText + ", iban=" + iban
+				+ ", bemerkungen=" + bemerkungen + ", countedContract=" + countedContract + ", sumBoxPrice="
+				+ sumBoxPrice + ", countedBox=" + countedBox + ", contracts=" + contracts + "]";
 	}
 
 	@Override

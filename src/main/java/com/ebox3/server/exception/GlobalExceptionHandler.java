@@ -32,7 +32,7 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler(ForbiddenException.class)
-	public ResponseEntity<ErrorMessage> forbiddenHandler(UnauthorizedException ex, WebRequest request) {
+	public ResponseEntity<ErrorMessage> forbiddenHandler(ForbiddenException ex, WebRequest request) {
 		ErrorMessage err = new ErrorMessage(ex.getMessage(), request.getDescription(false));
 		return new ResponseEntity<ErrorMessage>(err, HttpStatus.FORBIDDEN);
 	}
@@ -61,13 +61,6 @@ public class GlobalExceptionHandler {
 		ErrorMessage err = new ErrorMessage(ex.getMessage(), request.getDescription(false));
 		err.setErrors(errors);
 		return new ResponseEntity<ErrorMessage>(err, HttpStatus.BAD_REQUEST);
-	}
-
-	@ExceptionHandler(Exception.class)
-	public ResponseEntity<?> globleExcpetionHandler(Exception ex, WebRequest request) {
-		logger.error("Unhandeled exception occured", ex);
-		ErrorMessage err = new ErrorMessage(ex.getMessage(), request.getDescription(false));
-		return new ResponseEntity<ErrorMessage>(err, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 	
 	@ExceptionHandler(ResponseStatusException.class)

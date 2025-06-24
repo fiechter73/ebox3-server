@@ -71,6 +71,9 @@ public class Customer extends AuditModel {
 	@Column(name = "statusText")
 	private String statusText;
 
+	@Column(name = "iban")
+	private String iban;
+
 	@Column(name = "bemerkungen", columnDefinition = "TEXT")
 	private String bemerkungen;
 
@@ -79,7 +82,7 @@ public class Customer extends AuditModel {
 
 	public Customer(String anrede, String name, String vorname, String strasse, String ort, String plz, String tel1,
 			String tel2, String email, String firmenName, String rechnungsAnschrift, String firmenAnschrift, int age,
-			boolean active, boolean useCompanyAddress, String statusText, String bemerkungen) {
+			boolean active, boolean useCompanyAddress, String statusText, String iban, String bemerkungen) {
 		this.anrede = anrede;
 		this.name = name;
 		this.vorname = vorname;
@@ -95,6 +98,7 @@ public class Customer extends AuditModel {
 		this.active = active;
 		this.useCompanyAddress = useCompanyAddress;
 		this.statusText = statusText;
+		this.iban = iban;
 		this.bemerkungen = bemerkungen;
 	}
 
@@ -218,6 +222,14 @@ public class Customer extends AuditModel {
 		return statusText;
 	}
 
+	public String getIban() {
+		return iban;
+	}
+
+	public void setIban(String iban) {
+		this.iban = iban;
+	}
+
 	public String getAnrede() {
 		return anrede;
 	}
@@ -247,8 +259,8 @@ public class Customer extends AuditModel {
 		return "Customer [id=" + id + ", anrede=" + anrede + ", name=" + name + ", vorname=" + vorname + ", strasse="
 				+ strasse + ", ort=" + ort + ", plz=" + plz + ", tel1=" + tel1 + ", tel2=" + tel2 + ", email=" + email
 				+ ", useCompanyAddress=" + useCompanyAddress + ", firmenName=" + firmenName + ", firmenAnschrift="
-				+ firmenAnschrift + ", age=" + age + ", active=" + active + ", statusText=" + statusText
-				+ ", bemerkungen=" + bemerkungen + ", contracts=" + contracts + "]";
+				+ firmenAnschrift + ", age=" + age + ", active=" + active + ", statusText=" + statusText + ", iban="
+				+ iban + ", bemerkungen=" + bemerkungen + ", contracts=" + contracts + "]";
 	}
 
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "customer")

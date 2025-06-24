@@ -148,6 +148,7 @@ public class CustomerService1Impl extends HelpFunctions implements CustomerServi
 		customer.setName(customerDTO.getName());
 		customer.setVorname(customerDTO.getVorname());
 		customer.setEmail(customerDTO.getEmail());
+		customer.setIban(customerDTO.getIban()); // Iban is not settable via this method
 		customer.setTel1(customerDTO.getTel1());
 		customer.setFirmenName(customerDTO.getFirmenName());
 		customer.setFirmenAnschrift(customerDTO.getFirmenAnschrift());
