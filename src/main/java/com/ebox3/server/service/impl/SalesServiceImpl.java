@@ -40,7 +40,7 @@ public class SalesServiceImpl implements SalesService {
 		List<Ebox> list = eBoxRepository.findAll();
 		List<Ebox> eboxList = list.stream()
 				.filter(str -> (str.getStatusText().equals("frei") || str.getStatusText().equals("gekündigt")))
-				.filter(str -> !"Briefkasten".equals(str.getBoxType())) // Briefkasten herausfiltern
+				.filter(Ebox::isPublicOnWeb) // Filter for public objects
 				.sorted(Comparator.comparing(Ebox::getBoxNumber)).collect(Collectors.toList());
 
 		eboxList.forEach(ebox -> {

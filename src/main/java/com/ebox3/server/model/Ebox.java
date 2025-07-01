@@ -21,7 +21,7 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "ebox")
 
-public class Ebox extends AuditModel  {
+public class Ebox extends AuditModel {
 
 	/**
 	 * 
@@ -125,6 +125,9 @@ public class Ebox extends AuditModel  {
 	@Column(name = "bemerkungen")
 	private String bemerkungen;
 
+	@Column(name = "publicOnWeb")
+	private boolean publicOnWeb;
+
 	public Ebox() {
 	}
 
@@ -133,7 +136,8 @@ public class Ebox extends AuditModel  {
 			Double wasserPrice, boolean heizung, Double heizungPrice, boolean internet, Double internetPrice,
 			boolean briefkasten, Double briefkastenPrice, Double totalPriceNetto, Double mwstPrice, Double mwstSatz,
 			Double totalPriceBrutto, boolean status, String statusText, Date startDate, Date endDate,
-			Date terminateDate, String keysPerBox, String bemerkungen, boolean internetWifi, Double internetWifiPrice) {
+			Date terminateDate, String keysPerBox, String bemerkungen, boolean internetWifi, Double internetWifiPrice,
+			boolean publicOnWeb) {
 
 		this.boxnumber = boxnumber;
 		this.boxtype = boxtype;
@@ -166,6 +170,7 @@ public class Ebox extends AuditModel  {
 		this.internetWifi = internetWifi;
 		this.internetWifiPrice = internetWifiPrice;
 		this.bemerkungen = bemerkungen;
+		this.publicOnWeb = publicOnWeb;
 
 	}
 
@@ -441,6 +446,14 @@ public class Ebox extends AuditModel  {
 		this.bemerkungen = bemerkungen;
 	}
 
+	public boolean isPublicOnWeb() {
+		return publicOnWeb;
+	}
+
+	public void setPublicOnWeb(boolean publicOnWeb) {
+		this.publicOnWeb = publicOnWeb;
+	}
+
 	@Override
 	public String toString() {
 		return "Ebox [id=" + id + ", boxnumber=" + boxnumber + ", boxtype=" + boxtype + ", beschreibung=" + beschreibung
@@ -453,7 +466,8 @@ public class Ebox extends AuditModel  {
 				+ ", mwstPrice=" + mwstPrice + ", mwstSatz=" + mwstSatz + ", totalPriceBrutto=" + totalPriceBrutto
 				+ ", status=" + status + ", statusText=" + statusText + ", startDate=" + startDate + ", endDate="
 				+ endDate + ", terminateDate=" + terminateDate + ", keysPerBox=" + keysPerBox + ", bemerkungen="
-				+ bemerkungen + ", contract=" + contract + ", electricMeter=" + electricMeter + "]";
+				+ bemerkungen + ", publicOnWeb=" + publicOnWeb + ", contract=" + contract + ", electricMeter="
+				+ electricMeter + "]";
 	}
 
 	@Override
@@ -478,6 +492,5 @@ public class Ebox extends AuditModel  {
 	@OneToOne(mappedBy = "ebox")
 	@JsonIgnore
 	private ElectricMeter electricMeter;
-
 
 }

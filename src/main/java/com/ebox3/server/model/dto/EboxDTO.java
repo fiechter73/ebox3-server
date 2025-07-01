@@ -41,6 +41,7 @@ public class EboxDTO {
 	private Date terminateDate;
 	private Date lastRentDate;
 	private String laufzeit;
+	private boolean publicOnWeb;
 
 	public Long getId() {
 		return id;
@@ -330,6 +331,13 @@ public class EboxDTO {
 		this.laufzeit = laufzeit;
 	}
 
+	public boolean isPublicOnWeb() {
+		return publicOnWeb;
+	}
+
+	public void setPublicOnWeb(boolean publicOnWeb) {
+		this.publicOnWeb = publicOnWeb;
+	}
 
 	@Override
 	public String toString() {
@@ -344,7 +352,7 @@ public class EboxDTO {
 				+ ", keysPerBox=" + keysPerBox + ", status=" + status + ", statusText=" + statusText + ", boxNumber="
 				+ boxNumber + ", boxType=" + boxType + ", anschrift=" + anschrift + ", contractId=" + contractId
 				+ ", startDate=" + startDate + ", endDate=" + endDate + ", terminateDate=" + terminateDate
-				+ ", lastRentDate=" + lastRentDate + ", laufzeit=" + laufzeit + "]";
+				+ ", lastRentDate=" + lastRentDate + ", laufzeit=" + laufzeit + ", publicOnWeb=" + publicOnWeb + "]";
 	}
 
 	@Override
