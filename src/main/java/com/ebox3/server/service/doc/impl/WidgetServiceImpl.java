@@ -12,7 +12,9 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.ebox3.server.model.AdditionalCosts;
 import com.ebox3.server.model.Ebox;
@@ -57,407 +59,480 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 
 	@Override
 	public Iterable<WidgetDTO> getBigChart(String year) {
+		try {
+			Long mwStYear = null;
+			if (year == null || year.equals("undefined")) {
+				Calendar cal = Calendar.getInstance();
+				mwStYear = (long) cal.get(Calendar.YEAR);
+			} else {
+				mwStYear = Long.parseLong(year);
+			}
 
-		Long mwStYear = null;
-		if (year.equals("undefined") || year == null) {
-			Calendar cal = Calendar.getInstance();
-			mwStYear = (long) cal.get(Calendar.YEAR);
-		} else {
-			mwStYear = Long.parseLong(year);
+			List<PaymentDatePrice> list = paymentDatePriceRepository.findByYear(year);
+			if (list == null) {
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+						"Unable to retrieve payment data for year: " + year);
+			}
+
+			String mwstString = attributeKeyRepository.findMwstSatz("mwst", mwStYear);
+			if (mwstString == null || mwstString.trim().isEmpty()) {
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+						"Unable to retrieve MwSt rate for year: " + mwStYear);
+			}
+
+			Double mwst;
+			try {
+				mwst = Double.valueOf(mwstString);
+			} catch (NumberFormatException ex) {
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+						"Invalid MwSt rate format for year: " + mwStYear + ", value: " + mwstString);
+			}
+
+			List<WidgetDTO> retValue = new ArrayList<WidgetDTO>();
+
+			WidgetDTO dto = new WidgetDTO();
+			WidgetDTO dto1 = new WidgetDTO();
+
+			dto.setName("MwSt");
+			dto1.setName("Netto");
+
+			Double resNetto[] = new Double[12];
+			Double resMwSt[] = new Double[12];
+
+			Double janBruttoVal = list.stream()
+					.filter(payment -> payment != null && payment.getBruttoJanPrice() != null)
+					.mapToDouble(PaymentDatePrice::getBruttoJanPrice).sum();
+			resNetto[0] = calcMwst(janBruttoVal, mwst);
+			Double res = janBruttoVal - resNetto[0];
+			resMwSt[0] = Math.round(res * 100) / 100.0;
+
+			Double febBruttoVal = list.stream()
+					.filter(payment -> payment != null && payment.getBruttoFebPrice() != null)
+					.mapToDouble(PaymentDatePrice::getBruttoFebPrice).sum();
+			resNetto[1] = calcMwst(febBruttoVal, mwst);
+			Double res1 = febBruttoVal - resNetto[1];
+			resMwSt[1] = Math.round(res1 * 100) / 100.0;
+
+			Double marBruttoVal = list.stream()
+					.filter(payment -> payment != null && payment.getBruttoMarPrice() != null)
+					.mapToDouble(PaymentDatePrice::getBruttoMarPrice).sum();
+			resNetto[2] = calcMwst(marBruttoVal, mwst);
+			Double res2 = marBruttoVal - resNetto[2];
+			resMwSt[2] = Math.round(res2 * 100) / 100.0;
+
+			Double aprrBruttoVal = list.stream()
+					.filter(payment -> payment != null && payment.getBruttoAprPrice() != null)
+					.mapToDouble(PaymentDatePrice::getBruttoAprPrice).sum();
+			resNetto[3] = calcMwst(aprrBruttoVal, mwst);
+			Double res3 = aprrBruttoVal - resNetto[3];
+			resMwSt[3] = Math.round(res3 * 100) / 100.0;
+
+			Double maiBruttoVal = list.stream()
+					.filter(payment -> payment != null && payment.getBruttoMaiPrice() != null)
+					.mapToDouble(PaymentDatePrice::getBruttoMaiPrice).sum();
+			resNetto[4] = calcMwst(maiBruttoVal, mwst);
+			Double res4 = maiBruttoVal - resNetto[4];
+			resMwSt[4] = Math.round(res4 * 100) / 100.0;
+
+			Double junBruttoVal = list.stream()
+					.filter(payment -> payment != null && payment.getBruttoJunPrice() != null)
+					.mapToDouble(PaymentDatePrice::getBruttoJunPrice).sum();
+			resNetto[5] = calcMwst(junBruttoVal, mwst);
+			Double res5 = junBruttoVal - resNetto[5];
+			resMwSt[5] = Math.round(res5 * 100) / 100.0;
+
+			Double julBruttoVal = list.stream()
+					.filter(payment -> payment != null && payment.getBruttoJulPrice() != null)
+					.mapToDouble(PaymentDatePrice::getBruttoJulPrice).sum();
+			resNetto[6] = calcMwst(julBruttoVal, mwst);
+			Double res6 = julBruttoVal - resNetto[6];
+			resMwSt[6] = Math.round(res6 * 100) / 100.0;
+
+			Double augBruttoVal = list.stream()
+					.filter(payment -> payment != null && payment.getBruttoAugPrice() != null)
+					.mapToDouble(PaymentDatePrice::getBruttoAugPrice).sum();
+			resNetto[7] = calcMwst(augBruttoVal, mwst);
+			Double res7 = augBruttoVal - resNetto[7];
+			resMwSt[7] = Math.round(res7 * 100) / 100.0;
+
+			Double sepBruttoVal = list.stream()
+					.filter(payment -> payment != null && payment.getBruttoSepPrice() != null)
+					.mapToDouble(PaymentDatePrice::getBruttoSepPrice).sum();
+			resNetto[8] = calcMwst(sepBruttoVal, mwst);
+			Double res8 = sepBruttoVal - resNetto[8];
+			resMwSt[8] = Math.round(res8 * 100) / 100.0;
+
+			Double octBruttoVal = list.stream()
+					.filter(payment -> payment != null && payment.getBruttoOctPrice() != null)
+					.mapToDouble(PaymentDatePrice::getBruttoOctPrice).sum();
+			resNetto[9] = calcMwst(octBruttoVal, mwst);
+			Double res9 = octBruttoVal - resNetto[9];
+			resMwSt[9] = Math.round(res9 * 100) / 100.0;
+
+			Double novBruttoVal = list.stream()
+					.filter(payment -> payment != null && payment.getBruttoNovPrice() != null)
+					.mapToDouble(PaymentDatePrice::getBruttoNovPrice).sum();
+			resNetto[10] = calcMwst(novBruttoVal, mwst);
+			Double res10 = novBruttoVal - resNetto[10];
+			resMwSt[10] = Math.round(res10 * 100) / 100.0;
+
+			Double decBruttoVal = list.stream()
+					.filter(payment -> payment != null && payment.getBruttoDecPrice() != null)
+					.mapToDouble(PaymentDatePrice::getBruttoDecPrice).sum();
+			resNetto[11] = calcMwst(decBruttoVal, mwst);
+			Double res11 = decBruttoVal - resNetto[11];
+			resMwSt[11] = Math.round(res11 * 100) / 100.0;
+
+			dto.setData(resNetto);
+			dto1.setData(resMwSt);
+
+			retValue.add(dto);
+			retValue.add(dto1);
+
+			return retValue;
+
+		} catch (NumberFormatException ex) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Invalid year format: " + year);
+		} catch (ResponseStatusException ex) {
+			throw ex; // Re-throw ResponseStatusException
+		} catch (Exception ex) {
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+					"An unexpected error occurred while generating chart data");
 		}
-
-		List<PaymentDatePrice> list = paymentDatePriceRepository.findByYear(year);
-		Double mwst = Double.valueOf(attributeKeyRepository.findMwstSatz("mwst", mwStYear));
-
-		List<WidgetDTO> retValue = new ArrayList<WidgetDTO>();
-
-		WidgetDTO dto = new WidgetDTO();
-		WidgetDTO dto1 = new WidgetDTO();
-
-		dto.setName("MwSt");
-		dto1.setName("Netto");
-
-		Double resNetto[] = new Double[12];
-		Double resMwSt[] = new Double[12];
-
-		Double janBruttoVal = list.stream().filter(payment -> payment != null && payment.getBruttoJanPrice() != null)
-				.mapToDouble(PaymentDatePrice::getBruttoJanPrice).sum();
-		resNetto[0] = calcMwst(janBruttoVal, mwst);
-		Double res = janBruttoVal - resNetto[0];
-		resMwSt[0] = Math.round(res * 100) / 100.0;
-
-		Double febBruttoVal = list.stream().filter(payment -> payment != null && payment.getBruttoFebPrice() != null)
-				.mapToDouble(PaymentDatePrice::getBruttoFebPrice).sum();
-		resNetto[1] = calcMwst(febBruttoVal, mwst);
-		Double res1 = febBruttoVal - resNetto[1];
-		resMwSt[1] = Math.round(res1 * 100) / 100.0;
-
-		Double marBruttoVal = list.stream().filter(payment -> payment != null && payment.getBruttoMarPrice() != null)
-				.mapToDouble(PaymentDatePrice::getBruttoMarPrice).sum();
-		resNetto[2] = calcMwst(marBruttoVal, mwst);
-		Double res2 = marBruttoVal - resNetto[2];
-		resMwSt[2] = Math.round(res2 * 100) / 100.0;
-
-		Double aprrBruttoVal = list.stream().filter(payment -> payment != null && payment.getBruttoAprPrice() != null)
-				.mapToDouble(PaymentDatePrice::getBruttoAprPrice).sum();
-		resNetto[3] = calcMwst(aprrBruttoVal, mwst);
-		Double res3 = aprrBruttoVal - resNetto[3];
-		resMwSt[3] = Math.round(res3 * 100) / 100.0;
-
-		Double maiBruttoVal = list.stream().filter(payment -> payment != null && payment.getBruttoMaiPrice() != null)
-				.mapToDouble(PaymentDatePrice::getBruttoMaiPrice).sum();
-		resNetto[4] = calcMwst(maiBruttoVal, mwst);
-		Double res4 = maiBruttoVal - resNetto[4];
-		resMwSt[4] = Math.round(res4 * 100) / 100.0;
-
-		Double junBruttoVal = list.stream().filter(payment -> payment != null && payment.getBruttoJunPrice() != null)
-				.mapToDouble(PaymentDatePrice::getBruttoJunPrice).sum();
-		resNetto[5] = calcMwst(junBruttoVal, mwst);
-		Double res5 = junBruttoVal - resNetto[5];
-		resMwSt[5] = Math.round(res5 * 100) / 100.0;
-
-		Double julBruttoVal = list.stream().filter(payment -> payment != null && payment.getBruttoJulPrice() != null)
-				.mapToDouble(PaymentDatePrice::getBruttoJulPrice).sum();
-		resNetto[6] = calcMwst(julBruttoVal, mwst);
-		Double res6 = julBruttoVal - resNetto[6];
-		resMwSt[6] = Math.round(res6 * 100) / 100.0;
-
-		Double augBruttoVal = list.stream().filter(payment -> payment != null && payment.getBruttoAugPrice() != null)
-				.mapToDouble(PaymentDatePrice::getBruttoAugPrice).sum();
-		resNetto[7] = calcMwst(augBruttoVal, mwst);
-		Double res7 = augBruttoVal - resNetto[7];
-		resMwSt[7] = Math.round(res7 * 100) / 100.0;
-
-		Double sepBruttoVal = list.stream().filter(payment -> payment != null && payment.getBruttoSepPrice() != null)
-				.mapToDouble(PaymentDatePrice::getBruttoSepPrice).sum();
-		resNetto[8] = calcMwst(sepBruttoVal, mwst);
-		Double res8 = sepBruttoVal - resNetto[8];
-		resMwSt[8] = Math.round(res8 * 100) / 100.0;
-
-		Double octBruttoVal = list.stream().filter(payment -> payment != null && payment.getBruttoOctPrice() != null)
-				.mapToDouble(PaymentDatePrice::getBruttoOctPrice).sum();
-		resNetto[9] = calcMwst(octBruttoVal, mwst);
-		Double res9 = octBruttoVal - resNetto[9];
-		resMwSt[9] = Math.round(res9 * 100) / 100.0;
-
-		Double novBruttoVal = list.stream().filter(payment -> payment != null && payment.getBruttoNovPrice() != null)
-				.mapToDouble(PaymentDatePrice::getBruttoNovPrice).sum();
-		resNetto[10] = calcMwst(novBruttoVal, mwst);
-		Double res10 = novBruttoVal - resNetto[10];
-		resMwSt[10] = Math.round(res10 * 100) / 100.0;
-
-		Double decBruttoVal = list.stream().filter(payment -> payment != null && payment.getBruttoDecPrice() != null)
-				.mapToDouble(PaymentDatePrice::getBruttoDecPrice).sum();
-		resNetto[11] = calcMwst(decBruttoVal, mwst);
-		Double res11 = decBruttoVal - resNetto[11];
-		resMwSt[11] = Math.round(res11 * 100) / 100.0;
-
-		dto.setData(resNetto);
-		dto1.setData(resMwSt);
-
-		retValue.add(dto);
-		retValue.add(dto1);
-
-		return retValue;
 	}
 
 	@Override
 	public Iterable<ChartDataMonthDTO> getNgxChartBar(String year) {
+		try {
+			Long mwStYear = null;
+			if (year == null || year.equals("undefined")) {
+				Calendar cal = Calendar.getInstance();
+				mwStYear = (long) cal.get(Calendar.YEAR);
+			} else {
+				mwStYear = Long.parseLong(year);
+			}
 
-		Long mwStYear = null;
-		if (year.equals("undefined") || year == null) {
-			Calendar cal = Calendar.getInstance();
-			mwStYear = (long) cal.get(Calendar.YEAR);
-		} else {
-			mwStYear = Long.parseLong(year);
+			List<PaymentDatePrice> list = paymentDatePriceRepository.findByYear(mwStYear.toString());
+			if (list == null) {
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+						"Unable to retrieve payment data for year: " + mwStYear);
+			}
+
+			String mwstString = attributeKeyRepository.findMwstSatz("mwst", mwStYear);
+			if (mwstString == null || mwstString.trim().isEmpty()) {
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+						"Unable to retrieve MwSt rate for year: " + mwStYear);
+			}
+
+			Double mwst;
+			try {
+				mwst = Double.valueOf(mwstString);
+			} catch (NumberFormatException ex) {
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+						"Invalid MwSt rate format for year: " + mwStYear + ", value: " + mwstString);
+			}
+
+			List<ChartDataMonthDTO> retValue = new ArrayList<ChartDataMonthDTO>();
+
+			/** Januar **/
+			ChartDataMonthDTO cdmDTOJanuar = new ChartDataMonthDTO();
+			ChartDataSeriesDTO cdsDTOJanuarNetto = new ChartDataSeriesDTO();
+			ChartDataSeriesDTO cdsDTOJanuarMwst = new ChartDataSeriesDTO();
+			List<ChartDataSeriesDTO> cdsDTOlistJanuar = new ArrayList<ChartDataSeriesDTO>();
+
+			Double janBruttoVal = list.stream()
+					.filter(payment -> payment != null && payment.getBruttoJanPrice() != null)
+					.mapToDouble(PaymentDatePrice::getBruttoJanPrice).sum();
+			cdsDTOJanuarMwst.setName("MwSt");
+			cdsDTOJanuarMwst.setValue(calcMwst(janBruttoVal, mwst));
+
+			Double resJan = janBruttoVal - cdsDTOJanuarMwst.getValue();
+			cdsDTOJanuarNetto.setName("Netto");
+			cdsDTOJanuarNetto.setValue(Math.round(resJan * 100) / 100.0);
+
+			cdsDTOlistJanuar.add(cdsDTOJanuarNetto);
+			cdsDTOlistJanuar.add(cdsDTOJanuarMwst);
+
+			cdmDTOJanuar.setName("Januar");
+			cdmDTOJanuar.setSeries(cdsDTOlistJanuar);
+			retValue.add(cdmDTOJanuar);
+
+			/** Februar **/
+			ChartDataMonthDTO cdmDTOFebruar = new ChartDataMonthDTO();
+			ChartDataSeriesDTO cdsDTOFebruarNetto = new ChartDataSeriesDTO();
+			ChartDataSeriesDTO cdsDTOFebruarMwst = new ChartDataSeriesDTO();
+			List<ChartDataSeriesDTO> cdsDTOlistFebruar = new ArrayList<ChartDataSeriesDTO>();
+
+			Double febBruttoVal = list.stream()
+					.filter(payment -> payment != null && payment.getBruttoFebPrice() != null)
+					.mapToDouble(PaymentDatePrice::getBruttoFebPrice).sum();
+			cdsDTOFebruarMwst.setName("MwSt");
+			cdsDTOFebruarMwst.setValue(calcMwst(febBruttoVal, mwst));
+
+			Double resFeb = febBruttoVal - cdsDTOFebruarMwst.getValue();
+			cdsDTOFebruarNetto.setName("Netto");
+			cdsDTOFebruarNetto.setValue(Math.round(resFeb * 100) / 100.0);
+
+			cdsDTOlistFebruar.add(cdsDTOFebruarNetto);
+			cdsDTOlistFebruar.add(cdsDTOFebruarMwst);
+
+			cdmDTOFebruar.setName("Februar");
+			cdmDTOFebruar.setSeries(cdsDTOlistFebruar);
+
+			retValue.add(cdmDTOFebruar);
+
+			/** März **/
+			ChartDataMonthDTO cdmDTOMärz = new ChartDataMonthDTO();
+			ChartDataSeriesDTO cdsDTOMärzNetto = new ChartDataSeriesDTO();
+			ChartDataSeriesDTO cdsDTOMärzMwst = new ChartDataSeriesDTO();
+			List<ChartDataSeriesDTO> cdsDTOlistMärz = new ArrayList<ChartDataSeriesDTO>();
+
+			Double marBruttoVal = list.stream()
+					.filter(payment -> payment != null && payment.getBruttoMarPrice() != null)
+					.mapToDouble(PaymentDatePrice::getBruttoMarPrice).sum();
+			cdsDTOMärzMwst.setName("MwSt");
+			cdsDTOMärzMwst.setValue(calcMwst(marBruttoVal, mwst));
+
+			Double resMar = marBruttoVal - cdsDTOMärzMwst.getValue();
+			cdsDTOMärzNetto.setName("Netto");
+			cdsDTOMärzNetto.setValue(Math.round(resMar * 100) / 100.0);
+
+			cdsDTOlistMärz.add(cdsDTOMärzNetto);
+			cdsDTOlistMärz.add(cdsDTOMärzMwst);
+
+			cdmDTOMärz.setName("März");
+			cdmDTOMärz.setSeries(cdsDTOlistMärz);
+
+			retValue.add(cdmDTOMärz);
+
+			/** April **/
+			ChartDataMonthDTO cdmDTOApril = new ChartDataMonthDTO();
+			ChartDataSeriesDTO cdsDTOAprilNetto = new ChartDataSeriesDTO();
+			ChartDataSeriesDTO cdsDTOAprilMwst = new ChartDataSeriesDTO();
+			List<ChartDataSeriesDTO> cdsDTOlistApril = new ArrayList<ChartDataSeriesDTO>();
+
+			Double aprBruttoVal = list.stream()
+					.filter(payment -> payment != null && payment.getBruttoAprPrice() != null)
+					.mapToDouble(PaymentDatePrice::getBruttoAprPrice).sum();
+			cdsDTOAprilMwst.setName("MwSt");
+			cdsDTOAprilMwst.setValue(calcMwst(aprBruttoVal, mwst));
+
+			Double resApr = aprBruttoVal - cdsDTOAprilMwst.getValue();
+			cdsDTOAprilNetto.setName("Netto");
+			cdsDTOAprilNetto.setValue(Math.round(resApr * 100) / 100.0);
+
+			cdsDTOlistApril.add(cdsDTOAprilNetto);
+			cdsDTOlistApril.add(cdsDTOAprilMwst);
+
+			cdmDTOApril.setName("April");
+			cdmDTOApril.setSeries(cdsDTOlistApril);
+
+			retValue.add(cdmDTOApril);
+
+			/** Mai **/
+			ChartDataMonthDTO cdmDTOMai = new ChartDataMonthDTO();
+			ChartDataSeriesDTO cdsDTOMaiNetto = new ChartDataSeriesDTO();
+			ChartDataSeriesDTO cdsDTOMaiMwst = new ChartDataSeriesDTO();
+			List<ChartDataSeriesDTO> cdsDTOlistMai = new ArrayList<ChartDataSeriesDTO>();
+
+			Double maiBruttoVal = list.stream()
+					.filter(payment -> payment != null && payment.getBruttoMaiPrice() != null)
+					.mapToDouble(PaymentDatePrice::getBruttoMaiPrice).sum();
+			cdsDTOMaiMwst.setName("MwSt");
+			cdsDTOMaiMwst.setValue(calcMwst(maiBruttoVal, mwst));
+
+			Double resMai = maiBruttoVal - cdsDTOMaiMwst.getValue();
+			cdsDTOMaiNetto.setName("Netto");
+			cdsDTOMaiNetto.setValue(Math.round(resMai * 100) / 100.0);
+
+			cdsDTOlistMai.add(cdsDTOMaiNetto);
+			cdsDTOlistMai.add(cdsDTOMaiMwst);
+
+			cdmDTOMai.setName("Mai");
+			cdmDTOMai.setSeries(cdsDTOlistMai);
+
+			retValue.add(cdmDTOMai);
+
+			/** June **/
+			ChartDataMonthDTO cdmDTOJuni = new ChartDataMonthDTO();
+			ChartDataSeriesDTO cdsDTOJuniNetto = new ChartDataSeriesDTO();
+			ChartDataSeriesDTO cdsDTOJuniMwst = new ChartDataSeriesDTO();
+			List<ChartDataSeriesDTO> cdsDTOlistJuni = new ArrayList<ChartDataSeriesDTO>();
+
+			Double junBruttoVal = list.stream()
+					.filter(payment -> payment != null && payment.getBruttoJunPrice() != null)
+					.mapToDouble(PaymentDatePrice::getBruttoJunPrice).sum();
+			cdsDTOJuniMwst.setName("MwSt");
+			cdsDTOJuniMwst.setValue(calcMwst(junBruttoVal, mwst));
+
+			Double resJuni = junBruttoVal - cdsDTOJuniMwst.getValue();
+			cdsDTOJuniNetto.setName("Netto");
+			cdsDTOJuniNetto.setValue(Math.round(resJuni * 100) / 100.0);
+
+			cdsDTOlistJuni.add(cdsDTOJuniNetto);
+			cdsDTOlistJuni.add(cdsDTOJuniMwst);
+
+			cdmDTOJuni.setName("Juni");
+			cdmDTOJuni.setSeries(cdsDTOlistJuni);
+
+			retValue.add(cdmDTOJuni);
+
+			/** July **/
+			ChartDataMonthDTO cdmDTOJuli = new ChartDataMonthDTO();
+			ChartDataSeriesDTO cdsDTOJuliNetto = new ChartDataSeriesDTO();
+			ChartDataSeriesDTO cdsDTOJuliMwst = new ChartDataSeriesDTO();
+			List<ChartDataSeriesDTO> cdsDTOlistJuli = new ArrayList<ChartDataSeriesDTO>();
+
+			Double juliBruttoVal = list.stream()
+					.filter(payment -> payment != null && payment.getBruttoJulPrice() != null)
+					.mapToDouble(PaymentDatePrice::getBruttoJulPrice).sum();
+			cdsDTOJuliMwst.setName("MwSt");
+			cdsDTOJuliMwst.setValue(calcMwst(juliBruttoVal, mwst));
+
+			Double resJuli = juliBruttoVal - cdsDTOJuliMwst.getValue();
+			cdsDTOJuliNetto.setName("Netto");
+			cdsDTOJuliNetto.setValue(Math.round(resJuli * 100) / 100.0);
+
+			cdsDTOlistJuli.add(cdsDTOJuliNetto);
+			cdsDTOlistJuli.add(cdsDTOJuliMwst);
+
+			cdmDTOJuli.setName("Juli");
+			cdmDTOJuli.setSeries(cdsDTOlistJuli);
+
+			retValue.add(cdmDTOJuli);
+
+			/** August **/
+			ChartDataMonthDTO cdmDTOAugust = new ChartDataMonthDTO();
+			ChartDataSeriesDTO cdsDTOAugustNetto = new ChartDataSeriesDTO();
+			ChartDataSeriesDTO cdsDTOAugustMwst = new ChartDataSeriesDTO();
+			List<ChartDataSeriesDTO> cdsDTOlistAugust = new ArrayList<ChartDataSeriesDTO>();
+
+			Double augustBruttoVal = list.stream()
+					.filter(payment -> payment != null && payment.getBruttoAugPrice() != null)
+					.mapToDouble(PaymentDatePrice::getBruttoAugPrice).sum();
+			cdsDTOAugustMwst.setName("MwSt");
+			cdsDTOAugustMwst.setValue(calcMwst(augustBruttoVal, mwst));
+
+			Double resAugust = augustBruttoVal - cdsDTOAugustMwst.getValue();
+			cdsDTOAugustNetto.setName("Netto");
+			cdsDTOAugustNetto.setValue(Math.round(resAugust * 100) / 100.0);
+
+			cdsDTOlistAugust.add(cdsDTOAugustNetto);
+			cdsDTOlistAugust.add(cdsDTOAugustMwst);
+
+			cdmDTOAugust.setName("August");
+			cdmDTOAugust.setSeries(cdsDTOlistAugust);
+
+			retValue.add(cdmDTOAugust);
+
+			/** September **/
+			ChartDataMonthDTO cdmDTOSeptember = new ChartDataMonthDTO();
+			ChartDataSeriesDTO cdsDTOSeptemberNetto = new ChartDataSeriesDTO();
+			ChartDataSeriesDTO cdsDTOSeptemberMwst = new ChartDataSeriesDTO();
+			List<ChartDataSeriesDTO> cdsDTOlistSeptember = new ArrayList<ChartDataSeriesDTO>();
+
+			Double septemberBruttoVal = list.stream()
+					.filter(payment -> payment != null && payment.getBruttoSepPrice() != null)
+					.mapToDouble(PaymentDatePrice::getBruttoSepPrice).sum();
+			cdsDTOSeptemberMwst.setName("MwSt");
+			cdsDTOSeptemberMwst.setValue(calcMwst(septemberBruttoVal, mwst));
+
+			Double resSeptember = septemberBruttoVal - cdsDTOSeptemberMwst.getValue();
+			cdsDTOSeptemberNetto.setName("Netto");
+			cdsDTOSeptemberNetto.setValue(Math.round(resSeptember * 100) / 100.0);
+
+			cdsDTOlistSeptember.add(cdsDTOSeptemberNetto);
+			cdsDTOlistSeptember.add(cdsDTOSeptemberMwst);
+
+			cdmDTOSeptember.setName("September");
+			cdmDTOSeptember.setSeries(cdsDTOlistSeptember);
+
+			retValue.add(cdmDTOSeptember);
+
+			/** Oktober **/
+			ChartDataMonthDTO cdmDTOOktober = new ChartDataMonthDTO();
+			ChartDataSeriesDTO cdsDTOOktoberNetto = new ChartDataSeriesDTO();
+			ChartDataSeriesDTO cdsDTOOktoberMwst = new ChartDataSeriesDTO();
+			List<ChartDataSeriesDTO> cdsDTOlistOktober = new ArrayList<ChartDataSeriesDTO>();
+
+			Double oktoberBruttoVal = list.stream()
+					.filter(payment -> payment != null && payment.getBruttoOctPrice() != null)
+					.mapToDouble(PaymentDatePrice::getBruttoOctPrice).sum();
+			cdsDTOOktoberMwst.setName("MwSt");
+			cdsDTOOktoberMwst.setValue(calcMwst(oktoberBruttoVal, mwst));
+
+			Double resOktober = oktoberBruttoVal - cdsDTOOktoberMwst.getValue();
+			cdsDTOOktoberNetto.setName("Netto");
+			cdsDTOOktoberNetto.setValue(Math.round(resOktober * 100) / 100.0);
+
+			cdsDTOlistOktober.add(cdsDTOOktoberNetto);
+			cdsDTOlistOktober.add(cdsDTOOktoberMwst);
+
+			cdmDTOOktober.setName("Oktober");
+			cdmDTOOktober.setSeries(cdsDTOlistOktober);
+
+			retValue.add(cdmDTOOktober);
+
+			/** November **/
+			ChartDataMonthDTO cdmDTONovember = new ChartDataMonthDTO();
+			ChartDataSeriesDTO cdsDTONovemberNetto = new ChartDataSeriesDTO();
+			ChartDataSeriesDTO cdsDTONovemberMwst = new ChartDataSeriesDTO();
+			List<ChartDataSeriesDTO> cdsDTOlistNovember = new ArrayList<ChartDataSeriesDTO>();
+
+			Double novemberBruttoVal = list.stream()
+					.filter(payment -> payment != null && payment.getBruttoNovPrice() != null)
+					.mapToDouble(PaymentDatePrice::getBruttoNovPrice).sum();
+			cdsDTONovemberMwst.setName("MwSt");
+			cdsDTONovemberMwst.setValue(calcMwst(novemberBruttoVal, mwst));
+
+			Double resNovember = novemberBruttoVal - cdsDTONovemberMwst.getValue();
+			cdsDTONovemberNetto.setName("Netto");
+			cdsDTONovemberNetto.setValue(Math.round(resNovember * 100) / 100.0);
+
+			cdsDTOlistNovember.add(cdsDTONovemberNetto);
+			cdsDTOlistNovember.add(cdsDTONovemberMwst);
+
+			cdmDTONovember.setName("November");
+			cdmDTONovember.setSeries(cdsDTOlistNovember);
+
+			retValue.add(cdmDTONovember);
+
+			/** Dezember **/
+			ChartDataMonthDTO cdmDTODezember = new ChartDataMonthDTO();
+			ChartDataSeriesDTO cdsDTODezemberNetto = new ChartDataSeriesDTO();
+			ChartDataSeriesDTO cdsDTODezemberMwst = new ChartDataSeriesDTO();
+			List<ChartDataSeriesDTO> cdsDTOlistDezember = new ArrayList<ChartDataSeriesDTO>();
+
+			Double dezemberBruttoVal = list.stream()
+					.filter(payment -> payment != null && payment.getBruttoDecPrice() != null)
+					.mapToDouble(PaymentDatePrice::getBruttoDecPrice).sum();
+			cdsDTODezemberMwst.setName("MwSt");
+			cdsDTODezemberMwst.setValue(calcMwst(dezemberBruttoVal, mwst));
+
+			Double resDezember = dezemberBruttoVal - cdsDTODezemberMwst.getValue();
+			cdsDTODezemberNetto.setName("Netto");
+			cdsDTODezemberNetto.setValue(Math.round(resDezember * 100) / 100.0);
+
+			cdsDTOlistDezember.add(cdsDTODezemberNetto);
+			cdsDTOlistDezember.add(cdsDTODezemberMwst);
+
+			cdmDTODezember.setName("Dezember");
+			cdmDTODezember.setSeries(cdsDTOlistDezember);
+
+			retValue.add(cdmDTODezember);
+
+			return retValue;
+
+		} catch (NumberFormatException ex) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Invalid year format: " + year);
+		} catch (ResponseStatusException ex) {
+			throw ex; // Re-throw ResponseStatusException
+		} catch (Exception ex) {
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+					"An unexpected error occurred while generating chart data");
 		}
-
-		List<PaymentDatePrice> list = paymentDatePriceRepository.findByYear(mwStYear.toString());
-		Double mwst = Double.valueOf(attributeKeyRepository.findMwstSatz("mwst", mwStYear));
-
-		List<ChartDataMonthDTO> retValue = new ArrayList<ChartDataMonthDTO>();
-
-		/** Januar **/
-		ChartDataMonthDTO cdmDTOJanuar = new ChartDataMonthDTO();
-		ChartDataSeriesDTO cdsDTOJanuarNetto = new ChartDataSeriesDTO();
-		ChartDataSeriesDTO cdsDTOJanuarMwst = new ChartDataSeriesDTO();
-		List<ChartDataSeriesDTO> cdsDTOlistJanuar = new ArrayList<ChartDataSeriesDTO>();
-
-		Double janBruttoVal = list.stream().filter(payment -> payment != null && payment.getBruttoJanPrice() != null)
-				.mapToDouble(PaymentDatePrice::getBruttoJanPrice).sum();
-		cdsDTOJanuarMwst.setName("MwSt");
-		cdsDTOJanuarMwst.setValue(calcMwst(janBruttoVal, mwst));
-
-		Double resJan = janBruttoVal - cdsDTOJanuarMwst.getValue();
-		cdsDTOJanuarNetto.setName("Netto");
-		cdsDTOJanuarNetto.setValue(Math.round(resJan * 100) / 100.0);
-
-		cdsDTOlistJanuar.add(cdsDTOJanuarNetto);
-		cdsDTOlistJanuar.add(cdsDTOJanuarMwst);
-
-		cdmDTOJanuar.setName("Januar");
-		cdmDTOJanuar.setSeries(cdsDTOlistJanuar);
-		retValue.add(cdmDTOJanuar);
-
-		/** Februar **/
-		ChartDataMonthDTO cdmDTOFebruar = new ChartDataMonthDTO();
-		ChartDataSeriesDTO cdsDTOFebruarNetto = new ChartDataSeriesDTO();
-		ChartDataSeriesDTO cdsDTOFebruarMwst = new ChartDataSeriesDTO();
-		List<ChartDataSeriesDTO> cdsDTOlistFebruar = new ArrayList<ChartDataSeriesDTO>();
-
-		Double febBruttoVal = list.stream().filter(payment -> payment != null && payment.getBruttoFebPrice() != null)
-				.mapToDouble(PaymentDatePrice::getBruttoFebPrice).sum();
-		cdsDTOFebruarMwst.setName("MwSt");
-		cdsDTOFebruarMwst.setValue(calcMwst(febBruttoVal, mwst));
-
-		Double resFeb = febBruttoVal - cdsDTOFebruarMwst.getValue();
-		cdsDTOFebruarNetto.setName("Netto");
-		cdsDTOFebruarNetto.setValue(Math.round(resFeb * 100) / 100.0);
-
-		cdsDTOlistFebruar.add(cdsDTOFebruarNetto);
-		cdsDTOlistFebruar.add(cdsDTOFebruarMwst);
-
-		cdmDTOFebruar.setName("Februar");
-		cdmDTOFebruar.setSeries(cdsDTOlistFebruar);
-
-		retValue.add(cdmDTOFebruar);
-
-		/** März **/
-		ChartDataMonthDTO cdmDTOMärz = new ChartDataMonthDTO();
-		ChartDataSeriesDTO cdsDTOMärzNetto = new ChartDataSeriesDTO();
-		ChartDataSeriesDTO cdsDTOMärzMwst = new ChartDataSeriesDTO();
-		List<ChartDataSeriesDTO> cdsDTOlistMärz = new ArrayList<ChartDataSeriesDTO>();
-
-		Double marBruttoVal = list.stream().filter(payment -> payment != null && payment.getBruttoMarPrice() != null)
-				.mapToDouble(PaymentDatePrice::getBruttoMarPrice).sum();
-		cdsDTOMärzMwst.setName("MwSt");
-		cdsDTOMärzMwst.setValue(calcMwst(marBruttoVal, mwst));
-
-		Double resMar = marBruttoVal - cdsDTOMärzMwst.getValue();
-		cdsDTOMärzNetto.setName("Netto");
-		cdsDTOMärzNetto.setValue(Math.round(resMar * 100) / 100.0);
-
-		cdsDTOlistMärz.add(cdsDTOMärzNetto);
-		cdsDTOlistMärz.add(cdsDTOMärzMwst);
-
-		cdmDTOMärz.setName("März");
-		cdmDTOMärz.setSeries(cdsDTOlistMärz);
-
-		retValue.add(cdmDTOMärz);
-
-		/** April **/
-		ChartDataMonthDTO cdmDTOApril = new ChartDataMonthDTO();
-		ChartDataSeriesDTO cdsDTOAprilNetto = new ChartDataSeriesDTO();
-		ChartDataSeriesDTO cdsDTOAprilMwst = new ChartDataSeriesDTO();
-		List<ChartDataSeriesDTO> cdsDTOlistApril = new ArrayList<ChartDataSeriesDTO>();
-
-		Double aprBruttoVal = list.stream().filter(payment -> payment != null && payment.getBruttoAprPrice() != null)
-				.mapToDouble(PaymentDatePrice::getBruttoAprPrice).sum();
-		cdsDTOAprilMwst.setName("MwSt");
-		cdsDTOAprilMwst.setValue(calcMwst(aprBruttoVal, mwst));
-
-		Double resApr = aprBruttoVal - cdsDTOAprilMwst.getValue();
-		cdsDTOAprilNetto.setName("Netto");
-		cdsDTOAprilNetto.setValue(Math.round(resApr * 100) / 100.0);
-
-		cdsDTOlistApril.add(cdsDTOAprilNetto);
-		cdsDTOlistApril.add(cdsDTOAprilMwst);
-
-		cdmDTOApril.setName("April");
-		cdmDTOApril.setSeries(cdsDTOlistApril);
-
-		retValue.add(cdmDTOApril);
-
-		/** Mai **/
-		ChartDataMonthDTO cdmDTOMai = new ChartDataMonthDTO();
-		ChartDataSeriesDTO cdsDTOMaiNetto = new ChartDataSeriesDTO();
-		ChartDataSeriesDTO cdsDTOMaiMwst = new ChartDataSeriesDTO();
-		List<ChartDataSeriesDTO> cdsDTOlistMai = new ArrayList<ChartDataSeriesDTO>();
-
-		Double maiBruttoVal = list.stream().filter(payment -> payment != null && payment.getBruttoMaiPrice() != null)
-				.mapToDouble(PaymentDatePrice::getBruttoMaiPrice).sum();
-		cdsDTOMaiMwst.setName("MwSt");
-		cdsDTOMaiMwst.setValue(calcMwst(maiBruttoVal, mwst));
-
-		Double resMai = maiBruttoVal - cdsDTOMaiMwst.getValue();
-		cdsDTOMaiNetto.setName("Netto");
-		cdsDTOMaiNetto.setValue(Math.round(resMai * 100) / 100.0);
-
-		cdsDTOlistMai.add(cdsDTOMaiNetto);
-		cdsDTOlistMai.add(cdsDTOMaiMwst);
-
-		cdmDTOMai.setName("Mai");
-		cdmDTOMai.setSeries(cdsDTOlistMai);
-
-		retValue.add(cdmDTOMai);
-
-		/** June **/
-		ChartDataMonthDTO cdmDTOJuni = new ChartDataMonthDTO();
-		ChartDataSeriesDTO cdsDTOJuniNetto = new ChartDataSeriesDTO();
-		ChartDataSeriesDTO cdsDTOJuniMwst = new ChartDataSeriesDTO();
-		List<ChartDataSeriesDTO> cdsDTOlistJuni = new ArrayList<ChartDataSeriesDTO>();
-
-		Double junBruttoVal = list.stream().filter(payment -> payment != null && payment.getBruttoJunPrice() != null)
-				.mapToDouble(PaymentDatePrice::getBruttoJunPrice).sum();
-		cdsDTOJuniMwst.setName("MwSt");
-		cdsDTOJuniMwst.setValue(calcMwst(junBruttoVal, mwst));
-
-		Double resJuni = junBruttoVal - cdsDTOJuniMwst.getValue();
-		cdsDTOJuniNetto.setName("Netto");
-		cdsDTOJuniNetto.setValue(Math.round(resJuni * 100) / 100.0);
-
-		cdsDTOlistJuni.add(cdsDTOJuniNetto);
-		cdsDTOlistJuni.add(cdsDTOJuniMwst);
-
-		cdmDTOJuni.setName("Juni");
-		cdmDTOJuni.setSeries(cdsDTOlistJuni);
-
-		retValue.add(cdmDTOJuni);
-
-		/** July **/
-		ChartDataMonthDTO cdmDTOJuli = new ChartDataMonthDTO();
-		ChartDataSeriesDTO cdsDTOJuliNetto = new ChartDataSeriesDTO();
-		ChartDataSeriesDTO cdsDTOJuliMwst = new ChartDataSeriesDTO();
-		List<ChartDataSeriesDTO> cdsDTOlistJuli = new ArrayList<ChartDataSeriesDTO>();
-
-		Double juliBruttoVal = list.stream().filter(payment -> payment != null && payment.getBruttoJulPrice() != null)
-				.mapToDouble(PaymentDatePrice::getBruttoJulPrice).sum();
-		cdsDTOJuliMwst.setName("MwSt");
-		cdsDTOJuliMwst.setValue(calcMwst(juliBruttoVal, mwst));
-
-		Double resJuli = juliBruttoVal - cdsDTOJuliMwst.getValue();
-		cdsDTOJuliNetto.setName("Netto");
-		cdsDTOJuliNetto.setValue(Math.round(resJuli * 100) / 100.0);
-
-		cdsDTOlistJuli.add(cdsDTOJuliNetto);
-		cdsDTOlistJuli.add(cdsDTOJuliMwst);
-
-		cdmDTOJuli.setName("Juli");
-		cdmDTOJuli.setSeries(cdsDTOlistJuli);
-
-		retValue.add(cdmDTOJuli);
-
-		/** August **/
-		ChartDataMonthDTO cdmDTOAugust = new ChartDataMonthDTO();
-		ChartDataSeriesDTO cdsDTOAugustNetto = new ChartDataSeriesDTO();
-		ChartDataSeriesDTO cdsDTOAugustMwst = new ChartDataSeriesDTO();
-		List<ChartDataSeriesDTO> cdsDTOlistAugust = new ArrayList<ChartDataSeriesDTO>();
-
-		Double augustBruttoVal = list.stream().filter(payment -> payment != null && payment.getBruttoAugPrice() != null)
-				.mapToDouble(PaymentDatePrice::getBruttoAugPrice).sum();
-		cdsDTOAugustMwst.setName("MwSt");
-		cdsDTOAugustMwst.setValue(calcMwst(augustBruttoVal, mwst));
-
-		Double resAugust = augustBruttoVal - cdsDTOAugustMwst.getValue();
-		cdsDTOAugustNetto.setName("Netto");
-		cdsDTOAugustNetto.setValue(Math.round(resAugust * 100) / 100.0);
-
-		cdsDTOlistAugust.add(cdsDTOAugustNetto);
-		cdsDTOlistAugust.add(cdsDTOAugustMwst);
-
-		cdmDTOAugust.setName("August");
-		cdmDTOAugust.setSeries(cdsDTOlistAugust);
-
-		retValue.add(cdmDTOAugust);
-
-		/** September **/
-		ChartDataMonthDTO cdmDTOSeptember = new ChartDataMonthDTO();
-		ChartDataSeriesDTO cdsDTOSeptemberNetto = new ChartDataSeriesDTO();
-		ChartDataSeriesDTO cdsDTOSeptemberMwst = new ChartDataSeriesDTO();
-		List<ChartDataSeriesDTO> cdsDTOlistSeptember = new ArrayList<ChartDataSeriesDTO>();
-
-		Double septemberBruttoVal = list.stream()
-				.filter(payment -> payment != null && payment.getBruttoSepPrice() != null)
-				.mapToDouble(PaymentDatePrice::getBruttoSepPrice).sum();
-		cdsDTOSeptemberMwst.setName("MwSt");
-		cdsDTOSeptemberMwst.setValue(calcMwst(septemberBruttoVal, mwst));
-
-		Double resSeptember = septemberBruttoVal - cdsDTOSeptemberMwst.getValue();
-		cdsDTOSeptemberNetto.setName("Netto");
-		cdsDTOSeptemberNetto.setValue(Math.round(resSeptember * 100) / 100.0);
-
-		cdsDTOlistSeptember.add(cdsDTOSeptemberNetto);
-		cdsDTOlistSeptember.add(cdsDTOSeptemberMwst);
-
-		cdmDTOSeptember.setName("September");
-		cdmDTOSeptember.setSeries(cdsDTOlistSeptember);
-
-		retValue.add(cdmDTOSeptember);
-
-		/** Oktober **/
-		ChartDataMonthDTO cdmDTOOktober = new ChartDataMonthDTO();
-		ChartDataSeriesDTO cdsDTOOktoberNetto = new ChartDataSeriesDTO();
-		ChartDataSeriesDTO cdsDTOOktoberMwst = new ChartDataSeriesDTO();
-		List<ChartDataSeriesDTO> cdsDTOlistOktober = new ArrayList<ChartDataSeriesDTO>();
-
-		Double oktoberBruttoVal = list.stream()
-				.filter(payment -> payment != null && payment.getBruttoOctPrice() != null)
-				.mapToDouble(PaymentDatePrice::getBruttoOctPrice).sum();
-		cdsDTOOktoberMwst.setName("MwSt");
-		cdsDTOOktoberMwst.setValue(calcMwst(oktoberBruttoVal, mwst));
-
-		Double resOktober = oktoberBruttoVal - cdsDTOOktoberMwst.getValue();
-		cdsDTOOktoberNetto.setName("Netto");
-		cdsDTOOktoberNetto.setValue(Math.round(resOktober * 100) / 100.0);
-
-		cdsDTOlistOktober.add(cdsDTOOktoberNetto);
-		cdsDTOlistOktober.add(cdsDTOOktoberMwst);
-
-		cdmDTOOktober.setName("Oktober");
-		cdmDTOOktober.setSeries(cdsDTOlistOktober);
-
-		retValue.add(cdmDTOOktober);
-
-		/** November **/
-		ChartDataMonthDTO cdmDTONovember = new ChartDataMonthDTO();
-		ChartDataSeriesDTO cdsDTONovemberNetto = new ChartDataSeriesDTO();
-		ChartDataSeriesDTO cdsDTONovemberMwst = new ChartDataSeriesDTO();
-		List<ChartDataSeriesDTO> cdsDTOlistNovember = new ArrayList<ChartDataSeriesDTO>();
-
-		Double novemberBruttoVal = list.stream()
-				.filter(payment -> payment != null && payment.getBruttoNovPrice() != null)
-				.mapToDouble(PaymentDatePrice::getBruttoNovPrice).sum();
-		cdsDTONovemberMwst.setName("MwSt");
-		cdsDTONovemberMwst.setValue(calcMwst(novemberBruttoVal, mwst));
-
-		Double resNovember = novemberBruttoVal - cdsDTONovemberMwst.getValue();
-		cdsDTONovemberNetto.setName("Netto");
-		cdsDTONovemberNetto.setValue(Math.round(resNovember * 100) / 100.0);
-
-		cdsDTOlistNovember.add(cdsDTONovemberNetto);
-		cdsDTOlistNovember.add(cdsDTONovemberMwst);
-
-		cdmDTONovember.setName("November");
-		cdmDTONovember.setSeries(cdsDTOlistNovember);
-
-		retValue.add(cdmDTONovember);
-
-		/** Dezember **/
-		ChartDataMonthDTO cdmDTODezember = new ChartDataMonthDTO();
-		ChartDataSeriesDTO cdsDTODezemberNetto = new ChartDataSeriesDTO();
-		ChartDataSeriesDTO cdsDTODezemberMwst = new ChartDataSeriesDTO();
-		List<ChartDataSeriesDTO> cdsDTOlistDezember = new ArrayList<ChartDataSeriesDTO>();
-
-		Double dezemberBruttoVal = list.stream()
-				.filter(payment -> payment != null && payment.getBruttoDecPrice() != null)
-				.mapToDouble(PaymentDatePrice::getBruttoDecPrice).sum();
-		cdsDTODezemberMwst.setName("MwSt");
-		cdsDTODezemberMwst.setValue(calcMwst(dezemberBruttoVal, mwst));
-
-		Double resDezember = dezemberBruttoVal - cdsDTODezemberMwst.getValue();
-		cdsDTODezemberNetto.setName("Netto");
-		cdsDTODezemberNetto.setValue(Math.round(resDezember * 100) / 100.0);
-
-		cdsDTOlistDezember.add(cdsDTODezemberNetto);
-		cdsDTOlistDezember.add(cdsDTODezemberMwst);
-
-		cdmDTODezember.setName("Dezember");
-		cdmDTODezember.setSeries(cdsDTOlistDezember);
-
-		retValue.add(cdmDTODezember);
-
-		return retValue;
-
 	}
 
 	@Override
@@ -1415,104 +1490,116 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 			for (int i = startDate; i <= endDate; i++) {
 
 				switch (i) {
-				case 0:
-					
-					if (!item.isExcludeInPaymentList() &&  (item.getBruttoJanPrice() == null) && item.getBruttoJanDate() == null
-							&& item.getPayment().getAktBruttoPrice() != null
-							&& item.getPayment().getAktBruttoPrice() != 0.00) {
-						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
-						outPayList.add(setBasisData("Jan.",item, outPay));	
-					}
-					break;
-				case 1:
-					if (!item.isExcludeInPaymentList() && (item.getBruttoFebPrice() == null) && item.getBruttoFebDate() == null
-							&& item.getPayment().getAktBruttoPrice() != null
-							&& item.getPayment().getAktBruttoPrice() != 0.00) {
-						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
-						outPayList.add(setBasisData("Feb.",item, outPay));
-					}
-					break;
-				case 2:
-					if (!item.isExcludeInPaymentList() && (item.getBruttoMarPrice() == null) && item.getBruttoMarDate() == null
-							&& item.getPayment().getAktBruttoPrice() != null
-							&& item.getPayment().getAktBruttoPrice() != 0.00) {
-						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
-						outPayList.add(setBasisData("Mar.",item, outPay));
-					}
-					break;
-				case 3:
-					if (!item.isExcludeInPaymentList() && (item.getBruttoAprPrice() == null) && item.getBruttoAprDate() == null
-							&& item.getPayment().getAktBruttoPrice() != null
-							&& item.getPayment().getAktBruttoPrice() != 0.00) {
-						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
-						outPayList.add(setBasisData("Apr.",item, outPay));
-					}
-					break;
-				case 4:
-					if (!item.isExcludeInPaymentList() && (item.getBruttoMaiPrice() == null) && item.getBruttoMaiDate() == null
-							&& item.getPayment().getAktBruttoPrice() != null
-							&& item.getPayment().getAktBruttoPrice() != 0.00) {
-						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
-						outPayList.add(setBasisData("Mai.",item, outPay));
-					}
-					break;
-				case 5:
-					if (!item.isExcludeInPaymentList() && (item.getBruttoJunPrice() == null) && item.getBruttoJunDate() == null
-							&& item.getPayment().getAktBruttoPrice() != null
-							&& item.getPayment().getAktBruttoPrice() != 0.00) {
-						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
-						outPayList.add(setBasisData("Jun.",item, outPay));
-					}
-					break;
-				case 6:
-					if (!item.isExcludeInPaymentList() && (item.getBruttoJulPrice() == null) && item.getBruttoJulDate() == null
-							&& item.getPayment().getAktBruttoPrice() != null
-							&& item.getPayment().getAktBruttoPrice() != 0.00) {
-						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
-						outPayList.add(setBasisData("Jul.",item, outPay));
-					}
-					break;
-				case 7:
-					if (!item.isExcludeInPaymentList() && (item.getBruttoAugPrice() == null) && item.getBruttoAugDate() == null
-							&& item.getPayment().getAktBruttoPrice() != null
-							&& item.getPayment().getAktBruttoPrice() != 0.00) {
-						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
-						outPayList.add(setBasisData("Aug.",item, outPay));
-					}
-					break;
-				case 8:
-					if (!item.isExcludeInPaymentList() && (item.getBruttoSepPrice() == null) && item.getBruttoSepDate() == null
-							&& item.getPayment().getAktBruttoPrice() != null
-							&& item.getPayment().getAktBruttoPrice() != 0.00) {
-						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
-						outPayList.add(setBasisData("Sep.",item, outPay));
-					}
-					break;
-				case 9:
-					if (!item.isExcludeInPaymentList() && (item.getBruttoOctPrice() == null) && item.getBruttoOctDate() == null
-							&& item.getPayment().getAktBruttoPrice() != null
-							&& item.getPayment().getAktBruttoPrice() != 0.00) {
-						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
-						outPayList.add(setBasisData("Okt.",item, outPay));
-					}
-					break;
-				case 10:
-					if (!item.isExcludeInPaymentList() && (item.getBruttoNovPrice() == null) && item.getBruttoNovDate() == null
-							&& item.getPayment().getAktBruttoPrice() != null
-							&& item.getPayment().getAktBruttoPrice() != 0.00) {
-						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
-						outPayList.add(setBasisData("Nov.",item, outPay));
-					}
-					break;
-				case 11:
-					if (!item.isExcludeInPaymentList() && (item.getBruttoDecPrice() == null) && item.getBruttoDecDate() == null
-							&& item.getPayment().getAktBruttoPrice() != null
-							&& item.getPayment().getAktBruttoPrice() != 0.00) {
-						OutstandPaymentDTO outPay = new OutstandPaymentDTO();
-						outPayList.add(setBasisData("Dez.",item, outPay));
-					}
-					break;
-				default:
+					case 0:
+
+						if (!item.isExcludeInPaymentList() && (item.getBruttoJanPrice() == null)
+								&& item.getBruttoJanDate() == null
+								&& item.getPayment().getAktBruttoPrice() != null
+								&& item.getPayment().getAktBruttoPrice() != 0.00) {
+							OutstandPaymentDTO outPay = new OutstandPaymentDTO();
+							outPayList.add(setBasisData("Jan.", item, outPay));
+						}
+						break;
+					case 1:
+						if (!item.isExcludeInPaymentList() && (item.getBruttoFebPrice() == null)
+								&& item.getBruttoFebDate() == null
+								&& item.getPayment().getAktBruttoPrice() != null
+								&& item.getPayment().getAktBruttoPrice() != 0.00) {
+							OutstandPaymentDTO outPay = new OutstandPaymentDTO();
+							outPayList.add(setBasisData("Feb.", item, outPay));
+						}
+						break;
+					case 2:
+						if (!item.isExcludeInPaymentList() && (item.getBruttoMarPrice() == null)
+								&& item.getBruttoMarDate() == null
+								&& item.getPayment().getAktBruttoPrice() != null
+								&& item.getPayment().getAktBruttoPrice() != 0.00) {
+							OutstandPaymentDTO outPay = new OutstandPaymentDTO();
+							outPayList.add(setBasisData("Mar.", item, outPay));
+						}
+						break;
+					case 3:
+						if (!item.isExcludeInPaymentList() && (item.getBruttoAprPrice() == null)
+								&& item.getBruttoAprDate() == null
+								&& item.getPayment().getAktBruttoPrice() != null
+								&& item.getPayment().getAktBruttoPrice() != 0.00) {
+							OutstandPaymentDTO outPay = new OutstandPaymentDTO();
+							outPayList.add(setBasisData("Apr.", item, outPay));
+						}
+						break;
+					case 4:
+						if (!item.isExcludeInPaymentList() && (item.getBruttoMaiPrice() == null)
+								&& item.getBruttoMaiDate() == null
+								&& item.getPayment().getAktBruttoPrice() != null
+								&& item.getPayment().getAktBruttoPrice() != 0.00) {
+							OutstandPaymentDTO outPay = new OutstandPaymentDTO();
+							outPayList.add(setBasisData("Mai.", item, outPay));
+						}
+						break;
+					case 5:
+						if (!item.isExcludeInPaymentList() && (item.getBruttoJunPrice() == null)
+								&& item.getBruttoJunDate() == null
+								&& item.getPayment().getAktBruttoPrice() != null
+								&& item.getPayment().getAktBruttoPrice() != 0.00) {
+							OutstandPaymentDTO outPay = new OutstandPaymentDTO();
+							outPayList.add(setBasisData("Jun.", item, outPay));
+						}
+						break;
+					case 6:
+						if (!item.isExcludeInPaymentList() && (item.getBruttoJulPrice() == null)
+								&& item.getBruttoJulDate() == null
+								&& item.getPayment().getAktBruttoPrice() != null
+								&& item.getPayment().getAktBruttoPrice() != 0.00) {
+							OutstandPaymentDTO outPay = new OutstandPaymentDTO();
+							outPayList.add(setBasisData("Jul.", item, outPay));
+						}
+						break;
+					case 7:
+						if (!item.isExcludeInPaymentList() && (item.getBruttoAugPrice() == null)
+								&& item.getBruttoAugDate() == null
+								&& item.getPayment().getAktBruttoPrice() != null
+								&& item.getPayment().getAktBruttoPrice() != 0.00) {
+							OutstandPaymentDTO outPay = new OutstandPaymentDTO();
+							outPayList.add(setBasisData("Aug.", item, outPay));
+						}
+						break;
+					case 8:
+						if (!item.isExcludeInPaymentList() && (item.getBruttoSepPrice() == null)
+								&& item.getBruttoSepDate() == null
+								&& item.getPayment().getAktBruttoPrice() != null
+								&& item.getPayment().getAktBruttoPrice() != 0.00) {
+							OutstandPaymentDTO outPay = new OutstandPaymentDTO();
+							outPayList.add(setBasisData("Sep.", item, outPay));
+						}
+						break;
+					case 9:
+						if (!item.isExcludeInPaymentList() && (item.getBruttoOctPrice() == null)
+								&& item.getBruttoOctDate() == null
+								&& item.getPayment().getAktBruttoPrice() != null
+								&& item.getPayment().getAktBruttoPrice() != 0.00) {
+							OutstandPaymentDTO outPay = new OutstandPaymentDTO();
+							outPayList.add(setBasisData("Okt.", item, outPay));
+						}
+						break;
+					case 10:
+						if (!item.isExcludeInPaymentList() && (item.getBruttoNovPrice() == null)
+								&& item.getBruttoNovDate() == null
+								&& item.getPayment().getAktBruttoPrice() != null
+								&& item.getPayment().getAktBruttoPrice() != 0.00) {
+							OutstandPaymentDTO outPay = new OutstandPaymentDTO();
+							outPayList.add(setBasisData("Nov.", item, outPay));
+						}
+						break;
+					case 11:
+						if (!item.isExcludeInPaymentList() && (item.getBruttoDecPrice() == null)
+								&& item.getBruttoDecDate() == null
+								&& item.getPayment().getAktBruttoPrice() != null
+								&& item.getPayment().getAktBruttoPrice() != 0.00) {
+							OutstandPaymentDTO outPay = new OutstandPaymentDTO();
+							outPayList.add(setBasisData("Dez.", item, outPay));
+						}
+						break;
+					default:
 				}
 			}
 
@@ -1536,7 +1623,7 @@ public class WidgetServiceImpl extends CalcHelper implements WidgetService {
 		outPay.setBoxNumbers(item.getPayment().getBoxNumbers());
 		outPay.setPayment(item.getPayment().getAktBruttoPrice());
 		return outPay;
-		
+
 	}
 
 	// Ausgabe des Monats
