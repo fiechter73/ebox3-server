@@ -313,6 +313,12 @@ public class QrcodeServiceImpl extends CalcHelper implements QrcodeService {
 
 	// Beispiel für die Auslagerung der Adressverarbeitung
 	private Optional<Address> parseCompanyAddress(Customer customer) {
+		// Prüfe, ob die notwendigen Firmenadressfelder vorhanden sind
+		if (customer.getFirmenName() == null || customer.getFirmenName().trim().isEmpty() ||
+				customer.getFirmenAnschrift() == null || customer.getFirmenAnschrift().trim().isEmpty()) {
+			return Optional.empty(); // Fallback auf private Adresse
+		}
+
 		Pattern pattern = Pattern.compile("^([\\p{L}\\s]+)\\s(\\d+),?\\s(\\d+)\\s(.+)$");
 		Matcher matcher = pattern.matcher(customer.getFirmenAnschrift());
 		if (matcher.matches()) {
@@ -330,18 +336,36 @@ public class QrcodeServiceImpl extends CalcHelper implements QrcodeService {
 
 	private Address parsePrivateAddress(Customer customer) {
 		Address debtor = new Address();
-		Pattern pattern = Pattern.compile("^([\\p{L}\\s]+)\\s(\\d+)$");
-		Matcher matcher = pattern.matcher(customer.getStrasse());
-		debtor.setName(customer.getVorname() + " " + customer.getName());
-		if (matcher.matches()) {
-			debtor.setStreet(matcher.group(1));
-			debtor.setHouseNo(matcher.group(2));
-		} else {
-			debtor.setStreet(customer.getStrasse());
-			debtor.setHouseNo(""); // oder einen Standardwert
+
+		// Name zusammensetzen, mit Null-Checks
+		String vorname = (customer.getVorname() != null) ? customer.getVorname() : "";
+		String name = (customer.getName() != null) ? customer.getName() : "";
+		String fullName = (vorname + " " + name).trim();
+		if (fullName.isEmpty()) {
+			fullName = "Unbekannt"; // Fallback-Name
 		}
-		debtor.setPostalCode(customer.getPlz());
-		debtor.setTown(customer.getOrt());
+		debtor.setName(fullName);
+
+		// Straße parsen, mit Null-Check
+		String strasse = customer.getStrasse();
+		if (strasse != null && !strasse.trim().isEmpty()) {
+			Pattern pattern = Pattern.compile("^([\\p{L}\\s]+)\\s(\\d+)$");
+			Matcher matcher = pattern.matcher(strasse);
+			if (matcher.matches()) {
+				debtor.setStreet(matcher.group(1));
+				debtor.setHouseNo(matcher.group(2));
+			} else {
+				debtor.setStreet(strasse);
+				debtor.setHouseNo(""); // oder einen Standardwert
+			}
+		} else {
+			debtor.setStreet("Unbekannt");
+			debtor.setHouseNo("");
+		}
+
+		// PLZ und Ort mit Null-Checks
+		debtor.setPostalCode(customer.getPlz() != null ? customer.getPlz() : "");
+		debtor.setTown(customer.getOrt() != null ? customer.getOrt() : "");
 		debtor.setCountryCode("CH");
 		return debtor;
 	}
